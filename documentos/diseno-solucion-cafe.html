@@ -1,0 +1,755 @@
+<title>Trazabilidad del Tueste</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --ground: #ECE8DF;
+    --surface: #F8F6F0;
+    --surface-raised: #FFFFFF;
+    --ink: #2A241E;
+    --ink-soft: #6B5F53;
+    --ink-faint: #9B8F81;
+    --accent: #A85E23;
+    --accent-deep: #7A4419;
+    --accent-soft: #E8CDA8;
+    --green: #55684A;
+    --green-soft: #DCE3D2;
+    --line: rgba(42, 36, 30, 0.14);
+    --line-strong: rgba(42, 36, 30, 0.28);
+    --code-bg: #23201B;
+    --code-ink: #E8E1D4;
+    --shadow: 0 1px 2px rgba(42,36,30,0.06), 0 6px 20px rgba(42,36,30,0.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #19140F;
+      --surface: #221B14;
+      --surface-raised: #2A2119;
+      --ink: #EDE6DA;
+      --ink-soft: #B7A996;
+      --ink-faint: #83766A;
+      --accent: #D89A56;
+      --accent-deep: #E9B678;
+      --accent-soft: #4A3520;
+      --green: #9CB68A;
+      --green-soft: #2E3826;
+      --line: rgba(237, 230, 218, 0.14);
+      --line-strong: rgba(237, 230, 218, 0.26);
+      --code-bg: #0F0C09;
+      --code-ink: #E8E1D4;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #19140F;
+    --surface: #221B14;
+    --surface-raised: #2A2119;
+    --ink: #EDE6DA;
+    --ink-soft: #B7A996;
+    --ink-faint: #83766A;
+    --accent: #D89A56;
+    --accent-deep: #E9B678;
+    --accent-soft: #4A3520;
+    --green: #9CB68A;
+    --green-soft: #2E3826;
+    --line: rgba(237, 230, 218, 0.14);
+    --line-strong: rgba(237, 230, 218, 0.26);
+    --code-bg: #0F0C09;
+    --code-ink: #E8E1D4;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: 'Archivo', system-ui, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 0;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  nav.toc {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 2.2rem 1.4rem 2rem 2rem;
+    border-right: 1px solid var(--line);
+  }
+  nav.toc .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+  }
+  nav.toc .brand {
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+    margin-bottom: 1.6rem;
+    color: var(--ink);
+  }
+  nav.toc ol {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    counter-reset: toc;
+  }
+  nav.toc li { counter-increment: toc; }
+  nav.toc a {
+    display: flex;
+    gap: 0.55rem;
+    text-decoration: none;
+    color: var(--ink-soft);
+    font-size: 0.86rem;
+    padding: 0.34rem 0.4rem;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+  nav.toc a:hover { background: var(--surface-raised); color: var(--ink); }
+  nav.toc a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--ink-faint);
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+
+  main { padding: 2.4rem clamp(1.5rem, 4vw, 4rem) 6rem; min-width: 0; }
+
+  .doc-header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--line-strong); }
+  .doc-header .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.9rem;
+  }
+  .doc-header h1 {
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    line-height: 0.98;
+    letter-spacing: 0.005em;
+    margin: 0 0 0.9rem;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+  .doc-header p.lede { font-size: 1.08rem; color: var(--ink-soft); max-width: 62ch; margin: 0 0 1.4rem; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 1.6rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--ink-faint); }
+  .meta-row strong { color: var(--ink-soft); font-weight: 600; }
+
+  section { margin-bottom: 3.4rem; scroll-margin-top: 1.5rem; }
+
+  .section-head { display: flex; align-items: baseline; gap: 0.9rem; margin-bottom: 1.1rem; }
+  .section-head .num {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  h2 {
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 700;
+    font-size: 1.7rem;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    margin: 0;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    font-size: 1.08rem;
+    color: var(--ink);
+    margin: 1.6rem 0 0.7rem;
+  }
+  p { max-width: 68ch; color: var(--ink); }
+  p.note { color: var(--ink-soft); font-size: 0.94rem; max-width: 66ch; }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    padding: 0.9rem 1.1rem;
+    border-radius: 0 6px 6px 0;
+    max-width: 66ch;
+    margin: 1rem 0;
+    font-size: 0.94rem;
+    color: var(--ink-soft);
+  }
+  .callout strong { color: var(--ink); }
+  .callout.decision { border-left-color: var(--green); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.88rem;
+    box-shadow: var(--shadow);
+  }
+  .table-wrap { overflow-x: auto; margin: 1rem 0 1.4rem; }
+  th, td { text-align: left; padding: 0.6rem 0.85rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: var(--surface);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.mono, th.mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  .pill {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 100px;
+    background: var(--accent-soft);
+    color: var(--accent-deep);
+  }
+  .pill.green { background: var(--green-soft); color: var(--green); }
+
+  figure { margin: 1.2rem 0 1.6rem; }
+  figure .diagram-frame {
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.2rem;
+    overflow-x: auto;
+    box-shadow: var(--shadow);
+  }
+  figcaption { font-size: 0.82rem; color: var(--ink-faint); margin-top: 0.6rem; max-width: 62ch; }
+
+  pre.codeblock {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 1rem 1.2rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    margin: 1rem 0 1.4rem;
+  }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.9em; }
+  :not(pre) > code { background: var(--surface); padding: 0.1rem 0.35rem; border-radius: 4px; color: var(--accent-deep); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0 1.4rem; }
+  @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } .layout { grid-template-columns: 1fr; } nav.toc { display: none; } }
+
+  .stage-flow { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 1rem 0 1.4rem; }
+  .stage {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    color: var(--ink);
+  }
+  .stage-arrow { color: var(--ink-faint); font-size: 0.9rem; }
+
+  dl.glossary { display: grid; grid-template-columns: max-content 1fr; gap: 0.5rem 1.2rem; max-width: 68ch; }
+  dl.glossary dt { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--accent-deep); font-size: 0.88rem; white-space: nowrap; }
+  dl.glossary dd { margin: 0; color: var(--ink-soft); font-size: 0.9rem; }
+
+  footer { border-top: 1px solid var(--line); padding-top: 1.4rem; margin-top: 3rem; font-size: 0.8rem; color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; }
+
+  a.inline-link { color: var(--accent-deep); }
+
+  ::selection { background: var(--accent-soft); color: var(--accent-deep); }
+</style>
+
+<div class="layout">
+  <nav class="toc">
+    <div class="kicker">Documento &nbsp;01</div>
+    <div class="brand">Trazabilidad<br>del&nbsp;Tueste</div>
+    <ol>
+      <li><a href="#contexto">Contexto y objetivo</a></li>
+      <li><a href="#alcance">Alcance por módulos</a></li>
+      <li><a href="#flujos">Flujos de negocio</a></li>
+      <li><a href="#rnf">Requerimientos no funcionales</a></li>
+      <li><a href="#c4-contexto">Arquitectura — contexto</a></li>
+      <li><a href="#c4-contenedores">Arquitectura — contenedores</a></li>
+      <li><a href="#datos">Diseño de base de datos</a></li>
+      <li><a href="#seguridad">Seguridad y roles</a></li>
+      <li><a href="#ambientes">Ambientes y costos</a></li>
+      <li><a href="#observabilidad">Observabilidad</a></li>
+      <li><a href="#plan">Plan de implementación</a></li>
+      <li><a href="#riesgos">Riesgos y pendientes</a></li>
+      <li><a href="#glosario">Glosario cafetero</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="doc-header">
+      <div class="kicker">Documento de diseño de la solución</div>
+      <h1>Sistema de gestión para tueste, procesado y venta de café</h1>
+      <p class="lede">Cubre inventario multietapa, compras, producción (beneficiado, trillado, tueste, molido), servicios a terceros, clientes, pedidos y ventas — desde el grano cereza hasta la taza empacada con marca propia.</p>
+      <div class="meta-row">
+        <span><strong>Versión</strong> 1.0</span>
+        <span><strong>Fecha</strong> 31 ago 2026</span>
+        <span><strong>Stack</strong> Next.js · Supabase · Vercel</span>
+        <span><strong>Estado</strong> En diseño</span>
+      </div>
+    </header>
+
+    <section id="contexto">
+      <div class="section-head"><span class="num">01</span><h2>Contexto y objetivo</h2></div>
+      <p>El negocio combina tres actividades sobre un mismo insumo — el café — con reglas de inventario distintas cada una:</p>
+      <div class="grid-2">
+        <div class="callout"><strong>Producción propia.</strong> Compra de cereza/pergamino/verde a proveedores, procesado interno y venta bajo marca propia al menudeo y mayoreo.</div>
+        <div class="callout"><strong>Servicio a terceros.</strong> Tostado, pelado, molido o procesado de café que pertenece al cliente — se cobra por el servicio, no se compra ni se vende el grano.</div>
+      </div>
+      <p class="note">El sistema debe distinguir siempre estas dos rutas: un lote propio afecta inventario y costos; una orden de servicio afecta solo cuentas por cobrar.</p>
+    </section>
+
+    <section id="alcance">
+      <div class="section-head"><span class="num">02</span><h2>Alcance por módulos</h2></div>
+      <p class="note">El desarrollo se organiza en módulos incrementales; cada uno entrega un flujo usable antes de iniciar el siguiente. Detalle de secuencia y dependencias en <a class="inline-link" href="#plan">§11 Plan de implementación</a>.</p>
+      <div class="stage-flow">
+        <span class="stage">M0 · Fundamentos</span><span class="stage-arrow">→</span>
+        <span class="stage">M1 · Catálogos</span><span class="stage-arrow">→</span>
+        <span class="stage">M2 · Inventario/Lotes</span><span class="stage-arrow">→</span>
+        <span class="stage">M3 · Compras</span><span class="stage-arrow">→</span>
+        <span class="stage">M4 · Producción</span><span class="stage-arrow">→</span>
+        <span class="stage">M5 · Servicios</span><span class="stage-arrow">→</span>
+        <span class="stage">M6 · Pedidos/Ventas</span><span class="stage-arrow">→</span>
+        <span class="stage">M7 · Reportes</span>
+      </div>
+    </section>
+
+    <section id="flujos">
+      <div class="section-head"><span class="num">03</span><h2>Flujos de negocio</h2></div>
+
+      <h3>3.1 — Producción propia: de cereza a producto empacado</h3>
+      <p class="note">Cada flecha es una transición de lote que registra merma, proceso aplicado y responsable — es la base de la trazabilidad de extremo a extremo.</p>
+      <figure>
+        <div class="diagram-frame">
+<pre class="mermaid">
+flowchart LR
+    A["Compra a proveedor\n(cereza / pergamino / verde)"] --> B["Lote: CEREZA"]
+    B -->|"beneficiado\nlavado / honey / natural"| C["Lote: PERGAMINO"]
+    C -->|"trillado / pelado"| D["Lote: VERDE (oro)"]
+    D -->|"tueste\nperfil + curva"| E["Lote: TOSTADO"]
+    E -->|"molido\n(según método)"| F["Lote: MOLIDO"]
+    E -->|"empacado"| G["Producto terminado"]
+    F -->|"empacado"| G
+    G --> H["Pedido / Venta"]
+
+    classDef stage fill:transparent,stroke:#A85E23,stroke-width:1.4px,color:inherit;
+    class B,C,D,E,F,G stage;
+</pre>
+        </div>
+        <figcaption>Fig. 1 — Cada caja es un estado de lote con peso propio; cada flecha registra % de merma y queda escrita en <code>ordenes_proceso</code>.</figcaption>
+      </figure>
+
+      <h3>3.2 — Servicio a terceros (el café no es tuyo)</h3>
+      <figure>
+        <div class="diagram-frame">
+<pre class="mermaid">
+flowchart LR
+    A["Cliente trae su café\n(cereza/pergamino/verde/tostado)"] --> B["Orden de servicio\n(tipo + cantidad + tarifa)"]
+    B --> C{"Tipo de servicio"}
+    C -->|Tostado| D["Proceso aplicado"]
+    C -->|Pelado| D
+    C -->|Molido| D
+    C -->|Procesado| D
+    D --> E["Café devuelto al cliente"]
+    B --> F["Cobro por servicio"]
+
+    classDef ext fill:transparent,stroke:#55684A,stroke-width:1.4px,color:inherit;
+    class A,E ext;
+</pre>
+        </div>
+        <figcaption>Fig. 2 — El lote del cliente nunca entra al inventario propio; solo genera una orden de servicio y un cobro.</figcaption>
+      </figure>
+
+      <h3>3.3 — Pedido y venta de marca propia</h3>
+      <div class="stage-flow">
+        <span class="stage">Cliente</span><span class="stage-arrow">→</span>
+        <span class="stage">Pedido</span><span class="stage-arrow">→</span>
+        <span class="stage">Reserva de producto terminado</span><span class="stage-arrow">→</span>
+        <span class="stage">Venta</span><span class="stage-arrow">→</span>
+        <span class="stage">Descuento de inventario</span>
+      </div>
+    </section>
+
+    <section id="rnf">
+      <div class="section-head"><span class="num">04</span><h2>Requerimientos no funcionales</h2></div>
+      <p class="note">Verificados contra la arquitectura Supabase + Vercel propuesta. Donde el cumplimiento nativo tiene un costo desproporcionado a la escala del negocio, se documenta la decisión tomada.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Categoría</th><th>Atributo</th><th>Objetivo</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>Desempeño</td><td>Latencia</td><td>&lt; 1 s</td><td><span class="pill green">Cumple</span></td></tr>
+            <tr><td>Desempeño</td><td>Throughput</td><td>5 req/s</td><td><span class="pill green">Cumple</span></td></tr>
+            <tr><td>Disponibilidad</td><td>Uptime</td><td>SLA 99%</td><td><span class="pill">Parcial — sin SLA contractual en plan Free/Pro</span></td></tr>
+            <tr><td>Disponibilidad</td><td>RPO</td><td>≤ 12 h</td><td><span class="pill">Relajado a respaldo manual (§12)</span></td></tr>
+            <tr><td>Disponibilidad</td><td>RTO</td><td>≤ 1 día</td><td><span class="pill green">Cumple</span></td></tr>
+            <tr><td>Seguridad</td><td>Cifrado en tránsito</td><td>TLS 1.3</td><td><span class="pill green">Cumple</span></td></tr>
+            <tr><td>Seguridad</td><td>AuthN/AuthZ</td><td>OAuth 2.0 + RBAC</td><td><span class="pill green">Cumple — Supabase Auth + RLS</span></td></tr>
+            <tr><td>Seguridad</td><td>Auditabilidad</td><td>Log inmutable</td><td><span class="pill green">Cumple — tabla <code>audit_log</code> con triggers (§8)</span></td></tr>
+            <tr><td>Escalabilidad</td><td>Horizontal</td><td>Sin degradación</td><td><span class="pill">Parcial — API escala, BD es instancia única</span></td></tr>
+            <tr><td>Mantenibilidad</td><td>Testabilidad</td><td>Unit/integración/e2e</td><td><span class="pill green">Cumple</span></td></tr>
+            <tr><td>Mantenibilidad</td><td>Zero-downtime deploy</td><td>Sin caída</td><td><span class="pill green">Cumple — Vercel</span></td></tr>
+            <tr><td>Observabilidad</td><td>Métricas / alertas</td><td>Telemetría + alertas</td><td><span class="pill green">Cumple — Sentry + Better Stack (§10)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="c4-contexto">
+      <div class="section-head"><span class="num">05</span><h2>Arquitectura — C4 · Nivel 1, Contexto</h2></div>
+      <figure>
+        <div class="diagram-frame">
+<pre class="mermaid">
+flowchart TB
+    Admin(["Admin\n(dueño del negocio)"])
+    Operador(["Operador de planta"])
+    Ventas(["Vendedor"])
+
+    subgraph SIS["Sistema de Gestión de Café"]
+        APP["Aplicación web\ninventario · producción · ventas"]
+    end
+
+    Supabase[("Supabase\nBD + Auth + Storage")]
+    Sentry["Sentry\nerrores y trazas"]
+    BetterStack["Better Stack\nuptime y alertas"]
+
+    Admin -->|"gestiona compras,\nreportes, usuarios"| APP
+    Operador -->|"registra procesos\nde tueste/pelado/molido"| APP
+    Ventas -->|"registra pedidos\ny ventas"| APP
+    APP <-->|"datos, auth,\narchivos"| Supabase
+    APP -->|"reporta errores"| Sentry
+    Supabase -->|"expone métricas"| BetterStack
+
+    classDef person fill:transparent,stroke:#A85E23,stroke-width:1.4px,color:inherit;
+    classDef ext fill:transparent,stroke:#9B8F81,stroke-width:1px,stroke-dasharray:3 3,color:inherit;
+    class Admin,Operador,Ventas person;
+    class Supabase,Sentry,BetterStack ext;
+</pre>
+        </div>
+        <figcaption>Fig. 3 — Tres roles internos operan un único sistema; los tres servicios externos son gestionados (sin infraestructura propia que mantener).</figcaption>
+      </figure>
+    </section>
+
+    <section id="c4-contenedores">
+      <div class="section-head"><span class="num">06</span><h2>Arquitectura — C4 · Nivel 2, Contenedores</h2></div>
+      <figure>
+        <div class="diagram-frame">
+<pre class="mermaid">
+flowchart TB
+    User(["Usuario\n(navegador)"])
+
+    subgraph Vercel["Vercel"]
+        WEB["Next.js App\nSSR + páginas"]
+        API["API Routes / Server Actions\nreglas de negocio, cálculo de merma"]
+    end
+
+    subgraph SB["Supabase"]
+        AUTH["Auth\nOAuth 2.0 + JWT"]
+        PG[("Postgres\ncatálogos · lotes · ventas · audit_log")]
+        STORAGE["Storage\nfotos de producto, etiquetas"]
+    end
+
+    Sentry["Sentry"]
+    BS["Better Stack"]
+
+    User --> WEB
+    WEB --> API
+    API -->|"consulta/escribe\ncon RLS por rol"| PG
+    WEB -->|"login"| AUTH
+    AUTH -->|"JWT con claim\nde rol"| API
+    API --> STORAGE
+    WEB -.->|"errores runtime"| Sentry
+    API -.->|"excepciones"| Sentry
+    BS -.->|"health check"| WEB
+
+    classDef box fill:transparent,stroke:#A85E23,stroke-width:1.2px,color:inherit;
+    classDef data fill:transparent,stroke:#55684A,stroke-width:1.4px,color:inherit;
+    class WEB,API,AUTH,STORAGE box;
+    class PG data;
+</pre>
+        </div>
+        <figcaption>Fig. 4 — La autorización por rol vive en dos capas: el JWT trae el claim de rol, y Postgres lo vuelve a verificar vía RLS — así ninguna llamada directa a la BD evade el control de acceso.</figcaption>
+      </figure>
+    </section>
+
+    <section id="datos">
+      <div class="section-head"><span class="num">07</span><h2>Diseño de base de datos</h2></div>
+      <figure>
+        <div class="diagram-frame">
+<pre class="mermaid">
+erDiagram
+    PROVEEDORES ||--o{ COMPRAS : "vende a"
+    COMPRAS ||--|| LOTES : "genera"
+    VARIEDADES ||--o{ LOTES : "clasifica"
+    LOTES ||--o{ ORDENES_PROCESO : "entra/sale de"
+    PROCESOS_BENEFICIADO ||--o{ ORDENES_PROCESO : "aplica"
+    PERFILES_TUESTE ||--o{ ORDENES_PROCESO : "aplica"
+    CLIENTES ||--o{ ORDENES_SERVICIO : "solicita"
+    CLIENTES ||--o{ PEDIDOS : "realiza"
+    LOTES |o--o{ PRODUCTOS_TERMINADOS : "empaca en (opcional)"
+    PROVEEDORES |o--o{ PRODUCTOS_TERMINADOS : "reventa, si aplica"
+    PRESENTACIONES ||--o{ PRODUCTOS_TERMINADOS : "define"
+    PEDIDOS ||--o{ VENTAS : "concreta"
+    PRODUCTOS_TERMINADOS ||--o{ VENTAS : "vende"
+    PRODUCTOS_TERMINADOS ||--o{ MOVIMIENTOS_INVENTARIO : "registra movimiento"
+    LOTES |o--o{ MOVIMIENTOS_INVENTARIO : "trazabilidad de origen (opcional)"
+    USUARIOS ||--o{ ORDENES_PROCESO : "registra"
+    USUARIOS ||--o{ VENTAS : "atiende"
+
+    LOTES {
+        uuid id PK
+        uuid variedad_id FK
+        uuid proveedor_id FK
+        text etapa
+        numeric peso_actual_kg
+        date fecha_cosecha
+    }
+    ORDENES_PROCESO {
+        uuid id PK
+        uuid lote_origen_id FK
+        uuid lote_destino_id FK
+        text tipo_proceso
+        numeric merma_pct
+        uuid usuario_id FK
+    }
+    ORDENES_SERVICIO {
+        uuid id PK
+        uuid cliente_id FK
+        text tipo_servicio
+        numeric cantidad_kg
+        numeric tarifa
+        text estado
+    }
+    AUDIT_LOG {
+        bigint id PK
+        text table_name
+        text operation
+        jsonb old_data
+        jsonb new_data
+        uuid changed_by FK
+        timestamptz changed_at
+    }
+    MOVIMIENTOS_INVENTARIO {
+        bigint id PK
+        uuid producto_terminado_id FK
+        uuid lote_origen_id FK
+        text tipo_movimiento
+        int cantidad
+        uuid referencia_id
+        uuid usuario_id FK
+        timestamptz creado_en
+    }
+</pre>
+        </div>
+        <figcaption>Fig. 5 — <code>LOTES</code> es la entidad central: toda transformación (compra, beneficiado, trillado, tueste, molido, empacado) pasa por <code>ORDENES_PROCESO</code>, dejando trazabilidad completa desde la cereza hasta la venta.</figcaption>
+      </figure>
+
+      <h3>7.1 — Tabla de auditoría (append-only, con retención)</h3>
+      <p class="note">Registra cada INSERT/UPDATE/DELETE sobre tablas críticas vía trigger <code>SECURITY DEFINER</code>. La inmutabilidad frente a la aplicación se logra por privilegios (sin GRANT de update/delete a los roles de API), no por un trigger bloqueador — eso deja espacio para que un job de mantenimiento sí pueda purgar registros vencidos.</p>
+<pre class="codeblock">create table audit_log (
+  id bigint generated always as identity primary key,
+  table_name text not null,
+  record_id text not null,
+  operation text not null check (operation in ('INSERT','UPDATE','DELETE')),
+  old_data jsonb,
+  new_data jsonb,
+  changed_by uuid default auth.uid(),
+  changed_at timestamptz not null default now()
+);
+
+-- Inmutable de cara a la app: ningún rol de API puede editar/borrar
+revoke update, delete on audit_log from anon, authenticated;
+
+-- Retención configurable — purga automática vía pg_cron (incluido en plan Free)
+create or replace function fn_purge_audit_log(retencion_dias int default 15)
+returns void language sql security definer as $$
+  delete from audit_log
+  where changed_at < now() - (retencion_dias || ' days')::interval;
+$$;
+
+select cron.schedule('purge-audit-log', '0 3 * * *', $$select fn_purge_audit_log(15)$$);
+</pre>
+      <p class="note">15 días es el punto de partida — súbelo si te interesa poder investigar un ajuste de inventario raro varias semanas después; a esta escala de datos, 90 días no representa un costo de almacenamiento relevante.</p>
+
+      <h3>7.2 — Inventario de producto terminado</h3>
+      <p class="note"><code>LOTES</code> cubre el inventario en proceso (verde, tostado a granel, medido en kg). El producto empacado listo para vender se mide en <strong>unidades</strong> (bolsas de 250g/500g/1kg) y necesita su propio registro — como ledger, igual que <code>ORDENES_PROCESO</code>, para que el stock nunca se desincronice de su historial.</p>
+      <p class="note">No todo producto viene de tu propio proceso: también puedes comprar café ya listo para reventa. Por eso <code>productos_terminados</code> no depende obligatoriamente de un lote propio, y el ledger admite una entrada por compra directa además del ajuste manual.</p>
+<pre class="codeblock">alter table productos_terminados
+  alter column variedad_id drop not null,        -- opcional: reventa puede no tener variedad definida
+  alter column perfil_tueste_id drop not null,   -- opcional: reventa no pasó por tu tueste
+  add column origen text not null default 'produccion_propia'
+    check (origen in ('produccion_propia','reventa')),
+  add column proveedor_id uuid references proveedores(id);  -- de quién lo compraste, si es reventa
+
+create table movimientos_inventario (
+  id bigint generated always as identity primary key,
+  producto_terminado_id uuid not null references productos_terminados(id),
+  lote_origen_id uuid references lotes(id),        -- trazabilidad: de qué lote salió (null si es reventa)
+  tipo_movimiento text not null
+    check (tipo_movimiento in ('entrada_empacado','entrada_compra','salida_venta','ajuste')),
+  cantidad int not null,                            -- positivo en entrada, negativo en salida
+  referencia_id uuid,                               -- id de la venta, compra u orden de proceso que originó el movimiento
+  usuario_id uuid references auth.users(id),
+  creado_en timestamptz not null default now()
+);
+
+-- Stock actual: se calcula, nunca se guarda como contador editable
+create view inventario_producto_terminado as
+select producto_terminado_id, sum(cantidad) as stock_actual
+from movimientos_inventario
+group by producto_terminado_id;
+</pre>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="mono">tipo_movimiento</th><th>Cuándo se usa</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">entrada_empacado</td><td>Sale de tu propia producción (M4 → empacado)</td></tr>
+            <tr><td class="mono">entrada_compra</td><td>Compraste café ya listo para vender, sin pasar por tu proceso</td></tr>
+            <tr><td class="mono">salida_venta</td><td>Se vendió al cliente</td></tr>
+            <tr><td class="mono">ajuste</td><td>Corrección manual: conteo físico, merma por daño, alta inicial de producto nuevo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="seguridad">
+      <div class="section-head"><span class="num">08</span><h2>Seguridad y roles</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Rol</th><th>Inventario/Producción</th><th>Ventas/Clientes</th><th>Compras/Finanzas</th><th>Auditoría</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Admin</strong></td><td>Lectura/escritura</td><td>Lectura/escritura</td><td>Lectura/escritura</td><td>Solo lectura</td></tr>
+            <tr><td><strong>Operador de planta</strong></td><td>Lectura/escritura</td><td>Sin acceso</td><td>Sin acceso</td><td>Sin acceso</td></tr>
+            <tr><td><strong>Vendedor</strong></td><td>Solo lectura (stock)</td><td>Lectura/escritura</td><td>Sin acceso</td><td>Sin acceso</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Aplicado con Row Level Security en Postgres, verificando el claim <code>role</code> del JWT emitido por Supabase Auth — no solo en el frontend, para que ninguna llamada directa a la API lo evada.</p>
+    </section>
+
+    <section id="ambientes">
+      <div class="section-head"><span class="num">09</span><h2>Ambientes y costos</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ambiente</th><th>Vercel</th><th>Supabase</th><th>Respaldo</th><th class="mono">Costo/mes</th></tr></thead>
+          <tbody>
+            <tr><td>No productivo</td><td>Hobby (free) — preview deployments por rama</td><td>Proyecto Free</td><td>N/A</td><td class="mono">$0</td></tr>
+            <tr><td><strong>Productivo</strong></td><td>Hobby (free)</td><td>Proyecto Free</td><td>Manual (pendiente automatizar, §12)</td><td class="mono">$0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout decision"><strong>Decisión vigente:</strong> arrancar en free en ambos ambientes para validar el producto sin costo fijo. Backups vía <code>pg_dump</code> automatizado se implementan como tarea de cierre, no como mejora opcional — ver riesgo en §12.</div>
+      <h3>9.1 — Ruta de escalamiento cuando el negocio lo justifique</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Cambio</th><th class="mono">Costo add.</th><th>Motivo</th></tr></thead>
+          <tbody>
+            <tr><td>Vercel Pro</td><td class="mono">+$20/mes</td><td>Hobby prohíbe uso comercial en sus términos</td></tr>
+            <tr><td>Supabase Pro</td><td class="mono">+$25/mes</td><td>Backups diarios gestionados, sin pausa por inactividad</td></tr>
+            <tr><td>+ PITR (7 días)</td><td class="mono">+$100/mes</td><td>Solo si se exige RPO en minutos</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="observabilidad">
+      <div class="section-head"><span class="num">10</span><h2>Observabilidad</h2></div>
+      <p>Arranca en free en ambas herramientas — suficiente para el volumen actual (5 req/s):</p>
+      <div class="grid-2">
+        <div class="callout"><strong>Sentry (Developer, $0)</strong><br>5K errores/mes, captura de excepciones y trazas básicas del frontend y API routes.</div>
+        <div class="callout"><strong>Better Stack (Free, $0)</strong><br>10 monitores de uptime, alertas por Slack/email si el sitio cae.</div>
+      </div>
+      <p class="note">Se sube a plan pagado (~$26–34/mes cada uno) solo ante señal real: más de 5K errores/mes sostenidos, o necesidad de alertas por SMS/llamada fuera de horario.</p>
+
+      <h3>10.1 — Tres capas de log, tres herramientas distintas</h3>
+      <p class="note">No se centralizan en una sola tabla: cada capa responde una pregunta distinta y necesita su propia herramienta.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Capa</th><th>Responde</th><th>Herramienta</th><th>Retención</th></tr></thead>
+          <tbody>
+            <tr><td>Infraestructura</td><td>¿Por qué falló una query o una request?</td><td>Supabase Logs Explorer (nativo)</td><td class="mono">1 día Free · 7 días Pro</td></tr>
+            <tr><td>Aplicación</td><td>¿Qué excepción truena, con qué stack trace y qué usuario?</td><td>Sentry</td><td>Según plan (§10)</td></tr>
+            <tr><td>Auditoría de negocio</td><td>¿Quién cambió este dato y cuándo?</td><td>Tabla <code>audit_log</code> (§7.1)</td><td class="mono">Configurable, 15 días por defecto</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="plan">
+      <div class="section-head"><span class="num">11</span><h2>Plan de implementación por módulos</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="mono">#</th><th>Módulo</th><th>Contenido</th><th>Depende de</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">M0</td><td>Fundamentos</td><td>Repo, proyectos Supabase (dev/prod), auth, roles, RLS base, <code>audit_log</code></td><td>—</td></tr>
+            <tr><td class="mono">M1</td><td>Catálogos</td><td>Variedades, procesos, perfiles de tueste, presentaciones, proveedores, clientes</td><td>M0</td></tr>
+            <tr><td class="mono">M2</td><td>Inventario y lotes</td><td>Modelo multietapa, stock por etapa</td><td>M1</td></tr>
+            <tr><td class="mono">M3</td><td>Compras</td><td>Compra a proveedor → genera lote</td><td>M1, M2</td></tr>
+            <tr><td class="mono">M4</td><td>Producción</td><td>Órdenes de proceso: trillado, tueste, molido, cálculo de merma</td><td>M2</td></tr>
+            <tr><td class="mono">M5</td><td>Servicios a terceros</td><td>Órdenes de servicio, tarifas, sin impacto en inventario propio</td><td>M1, M4</td></tr>
+            <tr><td class="mono">M6</td><td>Pedidos y ventas</td><td>Pedidos de marca propia, ventas menudeo/mayoreo</td><td>M2, M3</td></tr>
+            <tr><td class="mono">M7</td><td>Reportes</td><td>Costos por lote, márgenes, inventario valorizado, trazabilidad</td><td>M2–M6</td></tr>
+            <tr><td class="mono">M8</td><td>Observabilidad</td><td>Sentry + Better Stack integrados en prod</td><td>Transversal</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="riesgos">
+      <div class="section-head"><span class="num">12</span><h2>Riesgos y decisiones pendientes</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Riesgo / pendiente</th><th>Impacto</th><th>Mitigación acordada</th></tr></thead>
+          <tbody>
+            <tr><td>Sin respaldo automático en producción</td><td>Alto — pérdida total de datos ante falla</td><td>Tarea de cierre obligatoria: <code>pg_dump</code> + cron a storage externo (§9)</td></tr>
+            <tr><td>Vercel Hobby en producción</td><td>Medio — incumple ToS de uso comercial</td><td>Aceptado durante validación; migrar a Pro al operar con clientes reales</td></tr>
+            <tr><td>RPO relajado de 12h a "manual"</td><td>Medio — ventana de pérdida indefinida hasta automatizar</td><td>Automatizar backup antes de manejar volumen real de ventas</td></tr>
+            <tr><td>BD de instancia única (sin sharding)</td><td>Bajo a esta escala</td><td>No accionable ahora; revisar si el throughput supera por mucho 5 req/s</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="glosario">
+      <div class="section-head"><span class="num">13</span><h2>Glosario cafetero</h2></div>
+      <dl class="glossary">
+        <dt>Cereza</dt><dd>Fruto del café recién cosechado, con pulpa y cáscara.</dd>
+        <dt>Beneficiado</dt><dd>Proceso que retira la pulpa de la cereza — lavado, honey o natural, según cuánto mucílago se deja.</dd>
+        <dt>Pergamino</dt><dd>Grano tras el beneficiado, aún envuelto en su cáscara interna (endocarpio).</dd>
+        <dt>Trillado / pelado</dt><dd>Retira el pergamino y deja el grano verde (oro), listo para tostar.</dd>
+        <dt>Verde / oro</dt><dd>Grano crudo sin tostar — la unidad de inventario que se compra/vende entre productores.</dd>
+        <dt>Tueste</dt><dd>Aplicación de calor según un perfil (curva de tiempo/temperatura) que define sabor y color final.</dd>
+        <dt>Merma</dt><dd>Pérdida de peso entre una etapa y la siguiente (ej. el tueste reduce el peso ~15–20%).</dd>
+      </dl>
+    </section>
+
+    <footer>Documento vivo — se actualiza conforme avanza cada módulo. Próxima revisión al cierre de M2.</footer>
+  </main>
+</div>
