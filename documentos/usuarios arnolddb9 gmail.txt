@@ -1,0 +1,2 @@
+usuarios Supabase arnolddb9@gmail.com contraseña sarchiadb985
+usuario admin de la base de datos arnolddb9@gmail.com pass Temporal123456789
