@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { obtenerRolActual } from "@/lib/session";
 import { obtenerHistorialLote } from "@/features/inventario/historial";
 import { HistorialArbol } from "@/features/inventario/historial-arbol";
 
@@ -12,7 +13,7 @@ export default async function HistorialLotePage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const historial = await obtenerHistorialLote(supabase, id);
+  const [historial, rol] = await Promise.all([obtenerHistorialLote(supabase, id), obtenerRolActual()]);
 
   if (!historial) notFound();
 
@@ -29,7 +30,7 @@ export default async function HistorialLotePage({
       <p className="mb-4 text-sm text-zinc-500">
         Desde la recepción hasta el estado actual, con cada proceso y su merma.
       </p>
-      <HistorialArbol nodo={historial} />
+      <HistorialArbol nodo={historial} esAdmin={rol === "admin"} />
     </main>
   );
 }

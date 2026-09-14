@@ -9,11 +9,16 @@ import {
   eliminarLote,
   iniciarOAvanzarBeneficiado,
   aplicarTrillado,
+  aplicarTueste,
+  aplicarMolido,
+  empacarLote,
   clasificarCalidadLote,
   actualizarFactorCajuela,
 } from "./actions";
 
 type Opcion = { id: string; nombre: string };
+type ArticuloOpcion = { id: string; nombre: string; tipo: string };
+type PresentacionOpcion = { id: string; nombre: string; peso_gramos: number | null };
 
 type EtapaBase = "cereza" | "pergamino" | "verde";
 const ETAPAS_BASE: readonly string[] = ["cereza", "pergamino", "verde"];
@@ -22,6 +27,10 @@ const ETAPA_LABEL: Record<EtapaBase, string> = {
   pergamino: "Pergamino",
   verde: "Verde",
 };
+// Etapas conocidas de M4, sumadas a las de M2: no son "pasos configurados"
+// de beneficiado (esos usan el nombre libre que el usuario les dio).
+const ETAPA_LABEL_EXTRA: Record<string, string> = { tostado: "Tostado", molido: "Molido" };
+const ETAPAS_CONOCIDAS: readonly string[] = [...ETAPAS_BASE, "tostado", "molido"];
 const CALIDAD_LABEL: Record<string, string> = {
   primera: "Primera",
   segunda: "Segunda",
@@ -34,6 +43,8 @@ type Lote = {
   nombre: string | null;
   variedad_id: string;
   proveedor_id: string | null;
+  finca_id: string | null;
+  numero_cama_secado: string | null;
   etapa: string;
   peso_actual_kg: number;
   cantidad_cajuelas: number | null;
@@ -41,10 +52,19 @@ type Lote = {
   calidad: string | null;
   variedad: { nombre: string } | null;
   proveedor: { nombre: string } | null;
+  finca: { nombre: string } | null;
+  perfil_tueste: { nombre: string } | null;
 };
 
 function etiquetaEtapa(etapa: string) {
-  return ETAPAS_BASE.includes(etapa) ? ETAPA_LABEL[etapa as EtapaBase] : etapa;
+  if (ETAPAS_BASE.includes(etapa)) return ETAPA_LABEL[etapa as EtapaBase];
+  return ETAPA_LABEL_EXTRA[etapa] ?? etapa;
+}
+
+function etiquetaBotonProceso(etapa: string) {
+  if (etapa === "verde") return "Tostar";
+  if (etapa === "tostado") return "Moler";
+  return "Aplicar proceso";
 }
 
 export function LotesTabla({
@@ -52,7 +72,11 @@ export function LotesTabla({
   resumenPorEtapa,
   variedades,
   proveedores,
+  fincas,
   procesosBeneficiado,
+  perfilesTueste,
+  articulos,
+  presentaciones,
   factorCajuela,
   puedeEscribir,
   esAdmin,
@@ -61,7 +85,11 @@ export function LotesTabla({
   resumenPorEtapa: { etiqueta: string; totalKg: number }[];
   variedades: Opcion[];
   proveedores: Opcion[];
+  fincas: Opcion[];
   procesosBeneficiado: Opcion[];
+  perfilesTueste: Opcion[];
+  articulos: ArticuloOpcion[];
+  presentaciones: PresentacionOpcion[];
   factorCajuela: number;
   puedeEscribir: boolean;
   esAdmin: boolean;
@@ -70,6 +98,7 @@ export function LotesTabla({
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [procesandoId, setProcesandoId] = useState<string | null>(null);
   const [clasificandoId, setClasificandoId] = useState<string | null>(null);
+  const [empacandoId, setEmpacandoId] = useState<string | null>(null);
   const [isPendingEliminar, startTransitionEliminar] = useTransition();
   const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
 
@@ -132,6 +161,7 @@ export function LotesTabla({
             <LoteForm
               variedades={variedades}
               proveedores={proveedores}
+              fincas={fincas}
               factorCajuela={factorCajuela}
               onGuardado={() => setMostrarForm(false)}
             />
@@ -141,10 +171,15 @@ export function LotesTabla({
         <div className="divide-y divide-zinc-100">
           {lotes.length === 0 && <p className="p-4 text-sm text-zinc-500">Sin lotes activos.</p>}
           {lotes.map((lote, i) => {
-            const esEtapaBase = ETAPAS_BASE.includes(lote.etapa);
+            const esEtapaConocida = ETAPAS_CONOCIDAS.includes(lote.etapa);
             const enPergamino = lote.etapa === "pergamino";
-            const enVerdeSinClasificar = lote.etapa === "verde" && !lote.calidad;
-            const puedeAvanzar = lote.etapa !== "verde"; // cereza, paso intermedio o pergamino
+            const enVerde = lote.etapa === "verde";
+            const enVerdeSinClasificar = enVerde && !lote.calidad;
+            const enTostadoOMolido = lote.etapa === "tostado" || lote.etapa === "molido";
+            // Cereza, paso intermedio de beneficiado, pergamino, verde o
+            // tostado: todos tienen una siguiente transformación posible.
+            // Molido es terminal para "Aplicar proceso" — de ahí solo se empaca.
+            const puedeAvanzar = lote.etapa !== "molido";
 
             return (
               <motion.div
@@ -160,6 +195,7 @@ export function LotesTabla({
                     lote={lote}
                     variedades={variedades}
                     proveedores={proveedores}
+                    fincas={fincas}
                     factorCajuela={factorCajuela}
                     onGuardado={() => setEditandoId(null)}
                   />
@@ -168,11 +204,21 @@ export function LotesTabla({
                     lote={lote}
                     esInicioBeneficiado={lote.etapa === "cereza"}
                     esTrillado={enPergamino}
+                    esTueste={enVerde}
+                    esMolido={lote.etapa === "tostado"}
                     procesosBeneficiado={procesosBeneficiado}
+                    perfilesTueste={perfilesTueste}
                     onGuardado={() => setProcesandoId(null)}
                   />
                 ) : clasificandoId === lote.id ? (
                   <ClasificarCalidadForm lote={lote} onGuardado={() => setClasificandoId(null)} />
+                ) : empacandoId === lote.id ? (
+                  <EmpacarForm
+                    lote={lote}
+                    articulos={articulos}
+                    presentaciones={presentaciones}
+                    onGuardado={() => setEmpacandoId(null)}
+                  />
                 ) : (
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
@@ -180,7 +226,7 @@ export function LotesTabla({
                         {lote.nombre ?? lote.variedad?.nombre ?? "—"}{" "}
                         <span
                           className={
-                            esEtapaBase
+                            esEtapaConocida
                               ? "bg-primary-soft text-primary ml-1 rounded px-1.5 py-0.5 text-xs font-medium"
                               : "ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700"
                           }
@@ -198,6 +244,9 @@ export function LotesTabla({
                         {lote.peso_actual_kg} kg
                         {lote.cantidad_cajuelas ? ` (${lote.cantidad_cajuelas} cajuelas)` : ""}
                         {lote.proveedor?.nombre ? ` · ${lote.proveedor.nombre}` : ""}
+                        {lote.finca?.nombre ? ` · ${lote.finca.nombre}` : ""}
+                        {lote.numero_cama_secado ? ` · cama ${lote.numero_cama_secado}` : ""}
+                        {lote.perfil_tueste?.nombre ? ` · ${lote.perfil_tueste.nombre}` : ""}
                         {lote.fecha_cosecha ? ` · cosecha ${lote.fecha_cosecha}` : ""}
                       </p>
                     </div>
@@ -227,11 +276,12 @@ export function LotesTabla({
                               setMostrarForm(false);
                               setEditandoId(null);
                               setClasificandoId(null);
+                              setEmpacandoId(null);
                               setProcesandoId(lote.id);
                             }}
                             className="min-h-9 rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-100"
                           >
-                            Aplicar proceso
+                            {etiquetaBotonProceso(lote.etapa)}
                           </button>
                         )}
                         {enVerdeSinClasificar && (
@@ -240,11 +290,26 @@ export function LotesTabla({
                               setMostrarForm(false);
                               setEditandoId(null);
                               setProcesandoId(null);
+                              setEmpacandoId(null);
                               setClasificandoId(lote.id);
                             }}
                             className="min-h-9 rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-100"
                           >
                             Clasificar calidad
+                          </button>
+                        )}
+                        {enTostadoOMolido && (
+                          <button
+                            onClick={() => {
+                              setMostrarForm(false);
+                              setEditandoId(null);
+                              setProcesandoId(null);
+                              setClasificandoId(null);
+                              setEmpacandoId(lote.id);
+                            }}
+                            className="min-h-9 rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-100"
+                          >
+                            Empacar
                           </button>
                         )}
                       </>
@@ -274,12 +339,14 @@ function LoteForm({
   lote,
   variedades,
   proveedores,
+  fincas,
   factorCajuela,
   onGuardado,
 }: {
   lote?: Lote;
   variedades: Opcion[];
   proveedores: Opcion[];
+  fincas: Opcion[];
   factorCajuela: number;
   onGuardado: () => void;
 }) {
@@ -356,6 +423,38 @@ function LoteForm({
             </option>
           ))}
         </select>
+      </div>
+
+      <div>
+        <label htmlFor="finca_id" className="mb-1 block text-sm text-zinc-600">
+          Finca (opcional)
+        </label>
+        <select
+          id="finca_id"
+          name="finca_id"
+          defaultValue={lote?.finca_id ?? ""}
+          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+        >
+          <option value="">Sin finca</option>
+          {fincas.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.nombre}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="numero_cama_secado" className="mb-1 block text-sm text-zinc-600">
+          Número de cama de secado (opcional)
+        </label>
+        <input
+          id="numero_cama_secado"
+          name="numero_cama_secado"
+          type="text"
+          defaultValue={lote?.numero_cama_secado ?? ""}
+          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+        />
       </div>
 
       <div>
@@ -470,16 +569,28 @@ function ProcesoForm({
   lote,
   esInicioBeneficiado,
   esTrillado,
+  esTueste,
+  esMolido,
   procesosBeneficiado,
+  perfilesTueste,
   onGuardado,
 }: {
   lote: Lote;
   esInicioBeneficiado: boolean;
   esTrillado: boolean;
+  esTueste: boolean;
+  esMolido: boolean;
   procesosBeneficiado: Opcion[];
+  perfilesTueste: Opcion[];
   onGuardado: () => void;
 }) {
-  const action = esTrillado ? aplicarTrillado : iniciarOAvanzarBeneficiado;
+  const action = esTrillado
+    ? aplicarTrillado
+    : esTueste
+      ? aplicarTueste
+      : esMolido
+        ? aplicarMolido
+        : iniciarOAvanzarBeneficiado;
   const [state, formAction, isPending] = useActionState(action, {});
 
   useEffect(() => {
@@ -498,12 +609,16 @@ function ProcesoForm({
       <p className="text-sm text-zinc-600">
         {esTrillado
           ? "Trillado: pergamino → verde"
-          : esInicioBeneficiado
-            ? "Iniciar beneficiado"
-            : `Continuar beneficiado (paso actual: ${lote.etapa})`}
+          : esTueste
+            ? "Tueste: verde → tostado"
+            : esMolido
+              ? "Molido: tostado → molido"
+              : esInicioBeneficiado
+                ? "Iniciar beneficiado"
+                : `Continuar beneficiado (paso actual: ${lote.etapa})`}
       </p>
 
-      {!esTrillado && esInicioBeneficiado && (
+      {esInicioBeneficiado && (
         <div>
           <label htmlFor="proceso_beneficiado_id" className="mb-1 block text-sm text-zinc-600">
             Proceso de beneficiado
@@ -518,6 +633,30 @@ function ProcesoForm({
               Selecciona un proceso
             </option>
             {procesosBeneficiado.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {esTueste && (
+        <div>
+          <label htmlFor="perfil_tueste_id" className="mb-1 block text-sm text-zinc-600">
+            Perfil de tueste
+          </label>
+          <select
+            id="perfil_tueste_id"
+            name="perfil_tueste_id"
+            required
+            defaultValue=""
+            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+          >
+            <option value="" disabled>
+              Selecciona un perfil
+            </option>
+            {perfilesTueste.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.nombre}
               </option>
@@ -609,6 +748,139 @@ function ClasificarCalidadForm({ lote, onGuardado }: { lote: Lote; onGuardado: (
   );
 }
 
+function EmpacarForm({
+  lote,
+  articulos,
+  presentaciones,
+  onGuardado,
+}: {
+  lote: Lote;
+  articulos: ArticuloOpcion[];
+  presentaciones: PresentacionOpcion[];
+  onGuardado: () => void;
+}) {
+  const [state, formAction, isPending] = useActionState(empacarLote, {});
+  const [presentacionId, setPresentacionId] = useState("");
+  const [unidades, setUnidades] = useState("");
+
+  useEffect(() => {
+    if (state && "success" in state) onGuardado();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
+  const productosTerminados = articulos.filter((a) => a.tipo === "producto_terminado");
+  const insumos = articulos.filter((a) => a.tipo === "insumo");
+  const presentacionSeleccionada = presentaciones.find((p) => p.id === presentacionId);
+  const pesoEstimado =
+    presentacionSeleccionada?.peso_gramos && unidades
+      ? (Number(unidades) * presentacionSeleccionada.peso_gramos) / 1000
+      : null;
+
+  return (
+    <form action={formAction} data-testid="form-empacar" className="space-y-3 rounded-md bg-zinc-50 p-4">
+      <input type="hidden" name="lote_origen_id" value={lote.id} />
+      <p className="text-sm text-zinc-600">Empacar desde {lote.peso_actual_kg} kg disponibles:</p>
+
+      <div>
+        <label htmlFor="articulo_id" className="mb-1 block text-sm text-zinc-600">
+          Producto terminado
+        </label>
+        <select
+          id="articulo_id"
+          name="articulo_id"
+          required
+          defaultValue=""
+          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+        >
+          <option value="" disabled>
+            {productosTerminados.length === 0 ? "No hay productos terminados en el catálogo" : "Selecciona un producto"}
+          </option>
+          {productosTerminados.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.nombre}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="presentacion_id" className="mb-1 block text-sm text-zinc-600">
+          Presentación
+        </label>
+        <select
+          id="presentacion_id"
+          name="presentacion_id"
+          required
+          value={presentacionId}
+          onChange={(e) => setPresentacionId(e.target.value)}
+          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+        >
+          <option value="" disabled>
+            Selecciona una presentación
+          </option>
+          {presentaciones.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.nombre}
+              {p.peso_gramos ? ` (${p.peso_gramos} g)` : ""}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="unidades" className="mb-1 block text-sm text-zinc-600">
+          Unidades a empacar
+        </label>
+        <input
+          id="unidades"
+          name="unidades"
+          type="number"
+          step="1"
+          min="1"
+          required
+          value={unidades}
+          onChange={(e) => setUnidades(e.target.value)}
+          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+        />
+        {pesoEstimado !== null && (
+          <p className="mt-1 text-xs text-zinc-500">≈ {pesoEstimado.toFixed(2)} kg del lote</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="insumo_articulo_id" className="mb-1 block text-sm text-zinc-600">
+          Insumo de empaque (opcional)
+        </label>
+        <select
+          id="insumo_articulo_id"
+          name="insumo_articulo_id"
+          defaultValue=""
+          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900"
+        >
+          <option value="">Sin insumo</option>
+          {insumos.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.nombre}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {state && "error" in state && state.error && (
+        <p className="text-sm text-red-600">{state.error}</p>
+      )}
+
+      <button
+        type="submit"
+        disabled={isPending}
+        className="bg-primary hover:bg-primary-dark min-h-10 rounded-md px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50"
+      >
+        {isPending ? "Empacando..." : "Empacar"}
+      </button>
+    </form>
+  );
+}
+
 function FactorCajuelaControl({ factorActual }: { factorActual: number }) {
   const [editando, setEditando] = useState(false);
   const [state, formAction, isPending] = useActionState(actualizarFactorCajuela, {});
@@ -620,7 +892,10 @@ function FactorCajuelaControl({ factorActual }: { factorActual: number }) {
 
   if (!editando) {
     return (
-      <div className="flex items-center justify-between rounded-lg border border-zinc-200 bg-white p-3 text-sm">
+      <div
+        data-testid="factor-cajuela"
+        className="flex items-center justify-between rounded-lg border border-zinc-200 bg-white p-3 text-sm"
+      >
         <span className="text-zinc-600">
           Factor cajuela: <span className="font-medium text-zinc-900">{factorActual} kg</span>
         </span>
@@ -637,6 +912,7 @@ function FactorCajuelaControl({ factorActual }: { factorActual: number }) {
   return (
     <form
       action={formAction}
+      data-testid="factor-cajuela"
       className="flex flex-wrap items-end gap-2 rounded-lg border border-zinc-200 bg-white p-3"
     >
       <div>

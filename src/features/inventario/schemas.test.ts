@@ -4,6 +4,9 @@ import {
   actualizarLoteSchema,
   iniciarOAvanzarBeneficiadoSchema,
   aplicarTrilladoSchema,
+  aplicarTuesteSchema,
+  aplicarMolidoSchema,
+  empacarLoteSchema,
   clasificarCalidadSchema,
   configuracionSchema,
 } from "./schemas";
@@ -59,6 +62,34 @@ describe("registrarLoteSchema", () => {
       }).success,
     ).toBe(false);
   });
+
+  it("acepta finca y número de cama de secado opcionales", () => {
+    const parsed = registrarLoteSchema.safeParse({
+      variedad_id: UUID,
+      etapa: "cereza",
+      cantidad_cajuelas: "8",
+      finca_id: UUID,
+      numero_cama_secado: "12",
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.finca_id).toBe(UUID);
+      expect(parsed.data.numero_cama_secado).toBe("12");
+    }
+  });
+
+  it("finca y cama de secado quedan en null si se omiten", () => {
+    const parsed = registrarLoteSchema.safeParse({
+      variedad_id: UUID,
+      etapa: "cereza",
+      cantidad_cajuelas: "8",
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.finca_id).toBeNull();
+      expect(parsed.data.numero_cama_secado).toBeNull();
+    }
+  });
 });
 
 describe("actualizarLoteSchema", () => {
@@ -100,6 +131,75 @@ describe("aplicarTrilladoSchema", () => {
   it("rechaza merma negativa", () => {
     expect(
       aplicarTrilladoSchema.safeParse({ lote_origen_id: UUID, merma_pct: "-1" }).success,
+    ).toBe(false);
+  });
+});
+
+describe("aplicarTuesteSchema", () => {
+  it("acepta un perfil y una merma dentro de rango", () => {
+    const parsed = aplicarTuesteSchema.safeParse({
+      lote_origen_id: UUID,
+      perfil_tueste_id: UUID,
+      merma_pct: "15",
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rechaza si falta el perfil de tueste", () => {
+    expect(
+      aplicarTuesteSchema.safeParse({ lote_origen_id: UUID, merma_pct: "15" }).success,
+    ).toBe(false);
+  });
+});
+
+describe("aplicarMolidoSchema", () => {
+  it("acepta una merma dentro de rango, sin perfil", () => {
+    const parsed = aplicarMolidoSchema.safeParse({ lote_origen_id: UUID, merma_pct: "3" });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rechaza merma fuera de rango", () => {
+    expect(
+      aplicarMolidoSchema.safeParse({ lote_origen_id: UUID, merma_pct: "101" }).success,
+    ).toBe(false);
+  });
+});
+
+describe("empacarLoteSchema", () => {
+  it("acepta unidades con insumo opcional", () => {
+    const parsed = empacarLoteSchema.safeParse({
+      lote_origen_id: UUID,
+      articulo_id: UUID,
+      presentacion_id: UUID,
+      unidades: "20",
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.unidades).toBe(20);
+      expect(parsed.data.insumo_articulo_id).toBeNull();
+    }
+  });
+
+  it("acepta un insumo de empaque cuando se indica", () => {
+    const parsed = empacarLoteSchema.safeParse({
+      lote_origen_id: UUID,
+      articulo_id: UUID,
+      presentacion_id: UUID,
+      unidades: "20",
+      insumo_articulo_id: UUID,
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.insumo_articulo_id).toBe(UUID);
+  });
+
+  it("rechaza unidades 0 o negativas", () => {
+    expect(
+      empacarLoteSchema.safeParse({
+        lote_origen_id: UUID,
+        articulo_id: UUID,
+        presentacion_id: UUID,
+        unidades: "0",
+      }).success,
     ).toBe(false);
   });
 });

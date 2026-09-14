@@ -2,13 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { traducirErrorEliminar } from "@/lib/db-errors";
 import {
   registrarLoteSchema,
   actualizarLoteSchema,
   iniciarOAvanzarBeneficiadoSchema,
   aplicarTrilladoSchema,
+  aplicarTuesteSchema,
+  aplicarMolidoSchema,
+  empacarLoteSchema,
   clasificarCalidadSchema,
   configuracionSchema,
+  ajustarStockSchema,
 } from "./schemas";
 
 export type ActionState = { error?: string } | { success: true };
@@ -106,7 +111,7 @@ export async function actualizarLote(
 export async function eliminarLote(id: string): Promise<ActionState> {
   const supabase = await createClient();
   const { error } = await supabase.from("lotes").delete().eq("id", id);
-  if (error) return { error: error.message };
+  if (error) return { error: traducirErrorEliminar(error) };
 
   revalidatePath("/inventario");
   return { success: true };
@@ -155,6 +160,81 @@ export async function aplicarTrillado(
   return { success: true };
 }
 
+export async function aplicarTueste(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = aplicarTuesteSchema.safeParse(datosDesdeFormulario(formData));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("aplicar_tueste", {
+    p_lote_origen_id: parsed.data.lote_origen_id,
+    p_perfil_tueste_id: parsed.data.perfil_tueste_id,
+    p_merma_pct: parsed.data.merma_pct,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/inventario");
+  return { success: true };
+}
+
+export async function aplicarMolido(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = aplicarMolidoSchema.safeParse(datosDesdeFormulario(formData));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("aplicar_molido", {
+    p_lote_origen_id: parsed.data.lote_origen_id,
+    p_merma_pct: parsed.data.merma_pct,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/inventario");
+  return { success: true };
+}
+
+export async function empacarLote(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = empacarLoteSchema.safeParse(datosDesdeFormulario(formData));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  const supabase = await createClient();
+  // El parámetro es no-nulable en los tipos generados, pero la función de
+  // Postgres acepta NULL (empacar sin descontar un insumo de empaque).
+  const { error } = await supabase.rpc("empacar_lote", {
+    p_lote_origen_id: parsed.data.lote_origen_id,
+    p_articulo_id: parsed.data.articulo_id,
+    p_presentacion_id: parsed.data.presentacion_id,
+    p_unidades: parsed.data.unidades,
+    p_insumo_articulo_id: parsed.data.insumo_articulo_id as string,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/inventario");
+  return { success: true };
+}
+
+export async function eliminarEmpacado(id: string): Promise<ActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("eliminar_empacado", { p_empacado_id: id });
+  if (error) return { error: traducirErrorEliminar(error) };
+
+  revalidatePath("/inventario");
+  return { success: true };
+}
+
 export async function clasificarCalidadLote(
   _prevState: ActionState,
   formData: FormData,
@@ -192,6 +272,26 @@ export async function actualizarFactorCajuela(
     .from("configuracion")
     .update({ factor_kg_por_cajuela: parsed.data.factor_kg_por_cajuela })
     .eq("id", 1);
+  if (error) return { error: error.message };
+
+  revalidatePath("/inventario");
+  return { success: true };
+}
+
+export async function ajustarStockArticulo(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = ajustarStockSchema.safeParse(datosDesdeFormulario(formData));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("ajustar_stock_articulo", {
+    p_articulo_id: parsed.data.articulo_id,
+    p_stock_nuevo: parsed.data.stock_nuevo,
+  });
   if (error) return { error: error.message };
 
   revalidatePath("/inventario");

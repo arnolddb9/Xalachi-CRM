@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { variedadSchema, clienteSchema } from "./schemas";
+import { variedadSchema, clienteSchema, articuloSchema } from "./schemas";
 
 describe("variedadSchema", () => {
   it("acepta un nombre válido sin descripción", () => {
@@ -51,5 +51,34 @@ describe("clienteSchema", () => {
     });
     expect(parsed.success).toBe(true);
     if (parsed.success) expect(parsed.data.email).toBeNull();
+  });
+});
+
+describe("articuloSchema", () => {
+  it("acepta un insumo válido", () => {
+    const parsed = articuloSchema.safeParse({
+      nombre: "Bolsas kraft 1kg",
+      tipo: "insumo",
+      unidad_medida: "pieza",
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rechaza un tipo inválido", () => {
+    const parsed = articuloSchema.safeParse({
+      nombre: "Café tostado de otro productor",
+      tipo: "otro",
+      unidad_medida: "kg",
+    });
+    expect(parsed.success).toBe(false);
+  });
+
+  it("rechaza unidad de medida vacía", () => {
+    const parsed = articuloSchema.safeParse({
+      nombre: "Etiquetas",
+      tipo: "insumo",
+      unidad_medida: "",
+    });
+    expect(parsed.success).toBe(false);
   });
 });

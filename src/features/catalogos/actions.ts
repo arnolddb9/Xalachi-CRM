@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { traducirErrorEliminar } from "@/lib/db-errors";
 import {
   CATALOGOS_GESTIONABLES,
   SCHEMAS_CATALOGOS,
@@ -131,7 +132,7 @@ export async function eliminarPasoBeneficiado(
 ): Promise<ActionState> {
   const supabase = await createClient();
   const { error } = await supabase.from("pasos_beneficiado").delete().eq("id", id);
-  if (error) return { error: error.message };
+  if (error) return { error: traducirErrorEliminar(error) };
 
   revalidatePath(`/catalogos/procesos/${procesoBeneficiadoId}`);
   return { success: true };
@@ -145,7 +146,7 @@ export async function eliminarCatalogoGestionable(tabla: string, id: string): Pr
 
   const supabase = await createClient();
   const { error } = await supabase.from(tabla).delete().eq("id", id);
-  if (error) return { error: error.message };
+  if (error) return { error: traducirErrorEliminar(error) };
 
   revalidatePath(`/catalogos/${tabla}`);
   return { success: true };

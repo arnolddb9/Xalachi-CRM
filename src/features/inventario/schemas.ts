@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-const uuid = z.uuid("Selecciona una opción válida.");
-const opcional = (schema: z.ZodType<string>) =>
+export const uuid = z.uuid("Selecciona una opción válida.");
+export const opcional = (schema: z.ZodType<string>) =>
   schema
     .optional()
     .or(z.literal(""))
     .transform((v) => (v ? v : null));
-const numeroOpcional = z
+export const numeroOpcional = z
   .string()
   .trim()
   .optional()
@@ -15,17 +15,19 @@ const numeroOpcional = z
 
 // Cereza se mide en cajuelas al recibirla (se calcula el peso con el factor
 // de configuración); pergamino/verde se registran directo en kg.
-const loteBaseSchema = z.object({
+export const loteBaseSchema = z.object({
   nombre: opcional(z.string().trim().max(200)),
   variedad_id: uuid,
   proveedor_id: opcional(uuid),
+  finca_id: opcional(uuid),
+  numero_cama_secado: opcional(z.string().trim().max(50)),
   etapa: z.enum(["cereza", "pergamino", "verde"], { message: "Selecciona una etapa válida." }),
   cantidad_cajuelas: numeroOpcional,
   peso_actual_kg: numeroOpcional,
   fecha_cosecha: opcional(z.string()),
 });
 
-function validarPesoSegunEtapa(
+export function validarPesoSegunEtapa(
   data: z.infer<typeof loteBaseSchema>,
   ctx: z.RefinementCtx,
 ) {
@@ -76,6 +78,29 @@ const kgOpcional = z
   .transform((v) => (v ? Number(v) : 0))
   .refine((v) => Number.isFinite(v) && v >= 0, { message: "Debe ser un número mayor o igual a 0." });
 
+export const aplicarTuesteSchema = z.object({
+  lote_origen_id: uuid,
+  perfil_tueste_id: uuid,
+  merma_pct: mermaSchema,
+});
+
+export const aplicarMolidoSchema = z.object({
+  lote_origen_id: uuid,
+  merma_pct: mermaSchema,
+});
+
+export const empacarLoteSchema = z.object({
+  lote_origen_id: uuid,
+  articulo_id: uuid,
+  presentacion_id: uuid,
+  unidades: z
+    .string()
+    .trim()
+    .transform((v) => Number(v))
+    .refine((v) => Number.isFinite(v) && v > 0, { message: "Las unidades deben ser mayores a 0." }),
+  insumo_articulo_id: opcional(uuid),
+});
+
 export const clasificarCalidadSchema = z
   .object({
     lote_origen_id: uuid,
@@ -88,6 +113,15 @@ export const clasificarCalidadSchema = z
     message: "Indica al menos un peso mayor a 0 en alguna calidad.",
     path: ["primera_kg"],
   });
+
+export const ajustarStockSchema = z.object({
+  articulo_id: uuid,
+  stock_nuevo: z
+    .string()
+    .trim()
+    .transform((v) => Number(v))
+    .refine((v) => Number.isFinite(v) && v >= 0, { message: "El stock debe ser mayor o igual a 0." }),
+});
 
 export const configuracionSchema = z.object({
   factor_kg_por_cajuela: z

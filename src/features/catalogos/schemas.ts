@@ -18,6 +18,8 @@ export const CATALOGOS_GESTIONABLES = [
   "presentaciones",
   "proveedores",
   "clientes",
+  "fincas",
+  "articulos",
 ] as const;
 
 export type CatalogoGestionable = (typeof CATALOGOS_GESTIONABLES)[number];
@@ -80,6 +82,19 @@ export const clienteSchema = z.object({
   notas: descripcionOpcional,
 });
 
+export const fincaSchema = z.object({
+  nombre: nombreObligatorio,
+  descripcion: descripcionOpcional,
+});
+
+export const articuloSchema = z.object({
+  nombre: nombreObligatorio,
+  tipo: z.enum(["insumo", "producto_terminado"], {
+    message: "Selecciona un tipo de artículo válido.",
+  }),
+  unidad_medida: z.string().trim().min(1, "Indica la unidad de medida.").max(30),
+});
+
 const ETAPAS_RESERVADAS = ["cereza", "pergamino", "verde"];
 
 export const pasoBeneficiadoSchema = z.object({
@@ -100,4 +115,6 @@ export const SCHEMAS_CATALOGOS: Record<CatalogoGestionable, z.ZodTypeAny> = {
   presentaciones: presentacionSchema,
   proveedores: proveedorSchema,
   clientes: clienteSchema,
+  fincas: fincaSchema,
+  articulos: articuloSchema,
 };

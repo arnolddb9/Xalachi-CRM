@@ -35,11 +35,15 @@ test.describe("Inventario y lotes (rol operador)", () => {
     const cajuelas = 10 + Math.floor(Math.random() * 500);
 
     await page.getByRole("button", { name: "Registrar lote" }).click();
-    await page.getByLabel("Nombre del lote (opcional)").fill(nombreLote);
-    await page.getByLabel("Variedad").selectOption({ index: 1 });
-    await page.getByLabel("Etapa inicial").selectOption("cereza");
-    await page.getByLabel("Cajuelas recibidas").fill(String(cajuelas));
-    await page.getByRole("button", { name: "Guardar" }).click();
+    // Escopeado al formulario: la barra de filtros de arriba también tiene un
+    // select "Variedad" (aria-label "Filtrar por variedad"), que Playwright
+    // matchea por substring si se busca sin escopear.
+    const formRegistrar = page.getByTestId("form-registrar-lote");
+    await formRegistrar.getByLabel("Nombre del lote (opcional)").fill(nombreLote);
+    await formRegistrar.getByLabel("Variedad").selectOption({ index: 1 });
+    await formRegistrar.getByLabel("Etapa inicial").selectOption("cereza");
+    await formRegistrar.getByLabel("Cajuelas recibidas").fill(String(cajuelas));
+    await formRegistrar.getByRole("button", { name: "Guardar" }).click();
 
     const filaCereza = page.getByTestId("fila-lote").filter({ hasText: nombreLote });
     await expect(filaCereza).toBeVisible();
@@ -61,6 +65,11 @@ test.describe("Inventario y lotes (rol operador)", () => {
   test("flujo con pasos configurados: cereza → paso → paso → pergamino → verde → clasificar calidad", async ({
     page,
   }) => {
+    // Este test hace muchas acciones reales de UI en secuencia (crear proceso,
+    // 2 pasos, lote, 4 transformaciones, navegar al historial) — legítimamente
+    // toma más que el default de 30s, sobre todo en el proyecto móvil.
+    test.setTimeout(60_000);
+
     await login(page, OPERADOR_EMAIL!, OPERADOR_PASSWORD!);
 
     // 1. Crear un proceso de beneficiado nuevo con 2 pasos configurados
@@ -97,11 +106,12 @@ test.describe("Inventario y lotes (rol operador)", () => {
     const cajuelas = 5 + Math.floor(Math.random() * 500);
 
     await page.getByRole("button", { name: "Registrar lote" }).click();
-    await page.getByLabel("Nombre del lote (opcional)").fill(nombreLote);
-    await page.getByLabel("Variedad").selectOption({ index: 1 });
-    await page.getByLabel("Etapa inicial").selectOption("cereza");
-    await page.getByLabel("Cajuelas recibidas").fill(String(cajuelas));
-    await page.getByRole("button", { name: "Guardar" }).click();
+    const formRegistrar = page.getByTestId("form-registrar-lote");
+    await formRegistrar.getByLabel("Nombre del lote (opcional)").fill(nombreLote);
+    await formRegistrar.getByLabel("Variedad").selectOption({ index: 1 });
+    await formRegistrar.getByLabel("Etapa inicial").selectOption("cereza");
+    await formRegistrar.getByLabel("Cajuelas recibidas").fill(String(cajuelas));
+    await formRegistrar.getByRole("button", { name: "Guardar" }).click();
 
     let fila = page.getByTestId("fila-lote").filter({ hasText: nombreLote });
     await expect(fila).toBeVisible();
@@ -191,10 +201,11 @@ test.describe("Inventario y lotes (rol operador)", () => {
     const pesoOrigen = 200 + 5 * Math.floor(Math.random() * 500);
 
     await page.getByRole("button", { name: "Registrar lote" }).click();
-    await page.getByLabel("Variedad").selectOption({ index: 1 });
-    await page.getByLabel("Etapa inicial").selectOption("verde");
-    await page.getByLabel("Peso (kg)").fill(String(pesoOrigen));
-    await page.getByRole("button", { name: "Guardar" }).click();
+    const formRegistrar = page.getByTestId("form-registrar-lote");
+    await formRegistrar.getByLabel("Variedad").selectOption({ index: 1 });
+    await formRegistrar.getByLabel("Etapa inicial").selectOption("verde");
+    await formRegistrar.getByLabel("Peso (kg)").fill(String(pesoOrigen));
+    await formRegistrar.getByRole("button", { name: "Guardar" }).click();
 
     const fila = page.getByTestId("fila-lote").filter({ hasText: `${pesoOrigen} kg` });
     await expect(fila).toBeVisible();
@@ -244,22 +255,25 @@ test.describe("Factor de cajuela (rol admin)", () => {
     await login(page, ADMIN_EMAIL!, ADMIN_PASSWORD!);
     await page.goto("/inventario");
 
-    await expect(page.getByText(/Factor cajuela:/)).toBeVisible();
-    await page.getByRole("button", { name: "Ajustar" }).click();
+    // Escopeado a su propio data-testid: "Ajustar" a secas también matchea
+    // por substring el botón "Ajustar existencias" de la tabla de artículos.
+    const factorCajuela = page.getByTestId("factor-cajuela");
+    await expect(factorCajuela.getByText(/Factor cajuela:/)).toBeVisible();
+    await factorCajuela.getByRole("button", { name: "Ajustar" }).click();
 
     // Un solo decimal: Postgres/JS no le agregan ceros de más al mostrarlo,
     // así el texto renderizado coincide exactamente con lo que se escribió.
     const nuevoFactor = 12 + (Date.now() % 5) + 0.5;
-    await page.getByLabel("Kg por cajuela").fill(String(nuevoFactor));
-    await page.getByRole("button", { name: "Guardar" }).click();
+    await page.getByTestId("factor-cajuela").getByLabel("Kg por cajuela").fill(String(nuevoFactor));
+    await page.getByTestId("factor-cajuela").getByRole("button", { name: "Guardar" }).click();
 
-    await expect(page.getByText(`Factor cajuela: ${nuevoFactor} kg`)).toBeVisible();
+    await expect(page.getByTestId("factor-cajuela").getByText(`Factor cajuela: ${nuevoFactor} kg`)).toBeVisible();
 
     // se regresa al valor por defecto para no afectar otras pruebas/uso real
-    await page.getByRole("button", { name: "Ajustar" }).click();
-    await page.getByLabel("Kg por cajuela").fill("13.6");
-    await page.getByRole("button", { name: "Guardar" }).click();
-    await expect(page.getByText("Factor cajuela: 13.6 kg")).toBeVisible();
+    await page.getByTestId("factor-cajuela").getByRole("button", { name: "Ajustar" }).click();
+    await page.getByTestId("factor-cajuela").getByLabel("Kg por cajuela").fill("13.6");
+    await page.getByTestId("factor-cajuela").getByRole("button", { name: "Guardar" }).click();
+    await expect(page.getByTestId("factor-cajuela").getByText("Factor cajuela: 13.6 kg")).toBeVisible();
   });
 
   test("un vendedor no ve el control de factor cajuela", async ({ page }) => {
@@ -280,11 +294,12 @@ test.describe("Eliminar lote (rol admin)", () => {
     const nombreLote = `E2E eliminar ${crypto.randomUUID()}`;
 
     await page.getByRole("button", { name: "Registrar lote" }).click();
-    await page.getByLabel("Nombre del lote (opcional)").fill(nombreLote);
-    await page.getByLabel("Variedad").selectOption({ index: 1 });
-    await page.getByLabel("Etapa inicial").selectOption("verde");
-    await page.getByLabel("Peso (kg)").fill("50");
-    await page.getByRole("button", { name: "Guardar" }).click();
+    const formRegistrar = page.getByTestId("form-registrar-lote");
+    await formRegistrar.getByLabel("Nombre del lote (opcional)").fill(nombreLote);
+    await formRegistrar.getByLabel("Variedad").selectOption({ index: 1 });
+    await formRegistrar.getByLabel("Etapa inicial").selectOption("verde");
+    await formRegistrar.getByLabel("Peso (kg)").fill("50");
+    await formRegistrar.getByRole("button", { name: "Guardar" }).click();
 
     const fila = page.getByTestId("fila-lote").filter({ hasText: nombreLote });
     await expect(fila).toBeVisible();

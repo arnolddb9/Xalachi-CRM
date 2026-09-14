@@ -39,6 +39,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      articulos: {
+        Row: {
+          activo: boolean
+          creado_en: string
+          id: string
+          nombre: string
+          stock_actual: number
+          tipo: string
+          unidad_medida: string
+        }
+        Insert: {
+          activo?: boolean
+          creado_en?: string
+          id?: string
+          nombre: string
+          stock_actual?: number
+          tipo: string
+          unidad_medida?: string
+        }
+        Update: {
+          activo?: boolean
+          creado_en?: string
+          id?: string
+          nombre?: string
+          stock_actual?: number
+          tipo?: string
+          unidad_medida?: string
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           changed_at: string
@@ -108,6 +138,80 @@ export type Database = {
         }
         Relationships: []
       }
+      compras: {
+        Row: {
+          articulo_id: string | null
+          cantidad: number | null
+          costo_total: number | null
+          creado_en: string
+          creado_por: string | null
+          fecha_compra: string
+          id: string
+          lote_id: string | null
+          notas: string | null
+          numero_factura: string | null
+          proveedor_id: string
+          tipo_compra: string
+        }
+        Insert: {
+          articulo_id?: string | null
+          cantidad?: number | null
+          costo_total?: number | null
+          creado_en?: string
+          creado_por?: string | null
+          fecha_compra?: string
+          id?: string
+          lote_id?: string | null
+          notas?: string | null
+          numero_factura?: string | null
+          proveedor_id: string
+          tipo_compra?: string
+        }
+        Update: {
+          articulo_id?: string | null
+          cantidad?: number | null
+          costo_total?: number | null
+          creado_en?: string
+          creado_por?: string | null
+          fecha_compra?: string
+          id?: string
+          lote_id?: string | null
+          notas?: string | null
+          numero_factura?: string | null
+          proveedor_id?: string
+          tipo_compra?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compras_articulo_id_fkey"
+            columns: ["articulo_id"]
+            isOneToOne: false
+            referencedRelation: "articulos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compras_creado_por_fkey"
+            columns: ["creado_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compras_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compras_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       configuracion: {
         Row: {
           actualizado_en: string
@@ -126,6 +230,102 @@ export type Database = {
         }
         Relationships: []
       }
+      empacados: {
+        Row: {
+          articulo_id: string
+          creado_en: string
+          id: string
+          insumo_articulo_id: string | null
+          lote_origen_id: string
+          peso_kg: number
+          presentacion_id: string
+          unidades: number
+          usuario_id: string | null
+        }
+        Insert: {
+          articulo_id: string
+          creado_en?: string
+          id?: string
+          insumo_articulo_id?: string | null
+          lote_origen_id: string
+          peso_kg: number
+          presentacion_id: string
+          unidades: number
+          usuario_id?: string | null
+        }
+        Update: {
+          articulo_id?: string
+          creado_en?: string
+          id?: string
+          insumo_articulo_id?: string | null
+          lote_origen_id?: string
+          peso_kg?: number
+          presentacion_id?: string
+          unidades?: number
+          usuario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empacados_articulo_id_fkey"
+            columns: ["articulo_id"]
+            isOneToOne: false
+            referencedRelation: "articulos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empacados_insumo_articulo_id_fkey"
+            columns: ["insumo_articulo_id"]
+            isOneToOne: false
+            referencedRelation: "articulos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empacados_lote_origen_id_fkey"
+            columns: ["lote_origen_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empacados_presentacion_id_fkey"
+            columns: ["presentacion_id"]
+            isOneToOne: false
+            referencedRelation: "presentaciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empacados_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fincas: {
+        Row: {
+          activo: boolean
+          creado_en: string
+          descripcion: string | null
+          id: string
+          nombre: string
+        }
+        Insert: {
+          activo?: boolean
+          creado_en?: string
+          descripcion?: string | null
+          id?: string
+          nombre: string
+        }
+        Update: {
+          activo?: boolean
+          creado_en?: string
+          descripcion?: string | null
+          id?: string
+          nombre?: string
+        }
+        Relationships: []
+      }
       lotes: {
         Row: {
           calidad: string | null
@@ -133,8 +333,11 @@ export type Database = {
           creado_en: string
           etapa: string
           fecha_cosecha: string | null
+          finca_id: string | null
           id: string
           nombre: string | null
+          numero_cama_secado: string | null
+          perfil_tueste_id: string | null
           peso_actual_kg: number
           peso_inicial_kg: number
           proceso_beneficiado_id: string | null
@@ -147,8 +350,11 @@ export type Database = {
           creado_en?: string
           etapa: string
           fecha_cosecha?: string | null
+          finca_id?: string | null
           id?: string
           nombre?: string | null
+          numero_cama_secado?: string | null
+          perfil_tueste_id?: string | null
           peso_actual_kg: number
           peso_inicial_kg: number
           proceso_beneficiado_id?: string | null
@@ -161,8 +367,11 @@ export type Database = {
           creado_en?: string
           etapa?: string
           fecha_cosecha?: string | null
+          finca_id?: string | null
           id?: string
           nombre?: string | null
+          numero_cama_secado?: string | null
+          perfil_tueste_id?: string | null
           peso_actual_kg?: number
           peso_inicial_kg?: number
           proceso_beneficiado_id?: string | null
@@ -170,6 +379,20 @@ export type Database = {
           variedad_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "lotes_finca_id_fkey"
+            columns: ["finca_id"]
+            isOneToOne: false
+            referencedRelation: "fincas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lotes_perfil_tueste_id_fkey"
+            columns: ["perfil_tueste_id"]
+            isOneToOne: false
+            referencedRelation: "perfiles_tueste"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lotes_proceso_beneficiado_id_fkey"
             columns: ["proceso_beneficiado_id"]
@@ -445,8 +668,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ajustar_stock_articulo: {
+        Args: { p_articulo_id: string; p_stock_nuevo: number }
+        Returns: undefined
+      }
+      aplicar_molido: {
+        Args: { p_lote_origen_id: string; p_merma_pct: number }
+        Returns: string
+      }
       aplicar_trillado: {
         Args: { p_lote_origen_id: string; p_merma_pct: number }
+        Returns: string
+      }
+      aplicar_tueste: {
+        Args: {
+          p_lote_origen_id: string
+          p_merma_pct: number
+          p_perfil_tueste_id: string
+        }
         Returns: string
       }
       clasificar_calidad_lote: {
@@ -460,6 +699,18 @@ export type Database = {
         Returns: undefined
       }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      eliminar_compra: { Args: { p_compra_id: string }; Returns: undefined }
+      eliminar_empacado: { Args: { p_empacado_id: string }; Returns: undefined }
+      empacar_lote: {
+        Args: {
+          p_articulo_id: string
+          p_insumo_articulo_id: string
+          p_lote_origen_id: string
+          p_presentacion_id: string
+          p_unidades: number
+        }
+        Returns: string
+      }
       fn_purge_audit_log: {
         Args: { retencion_dias?: number }
         Returns: undefined
@@ -469,6 +720,36 @@ export type Database = {
           p_lote_origen_id: string
           p_merma_pct: number
           p_proceso_beneficiado_id: string
+        }
+        Returns: string
+      }
+      registrar_compra_articulo: {
+        Args: {
+          p_articulo_id: string
+          p_cantidad: number
+          p_costo_total: number
+          p_fecha_compra: string
+          p_notas: string
+          p_numero_factura: string
+          p_proveedor_id: string
+        }
+        Returns: string
+      }
+      registrar_compra_lote: {
+        Args: {
+          p_cantidad_cajuelas: number
+          p_costo_total: number
+          p_etapa: string
+          p_fecha_compra: string
+          p_fecha_cosecha: string
+          p_finca_id: string
+          p_nombre: string
+          p_notas: string
+          p_numero_cama_secado: string
+          p_numero_factura: string
+          p_peso_actual_kg: number
+          p_proveedor_id: string
+          p_variedad_id: string
         }
         Returns: string
       }

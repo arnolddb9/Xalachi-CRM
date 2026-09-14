@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Leaf, Droplets, Flame, Package, Truck, Users, type LucideIcon } from "lucide-react";
+import { Leaf, Droplets, Flame, Package, Truck, Users, Mountain, Boxes, type LucideIcon } from "lucide-react";
 
 const CATALOGOS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/catalogos/variedades", label: "Variedades", icon: Leaf },
@@ -11,6 +11,8 @@ const CATALOGOS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/catalogos/presentaciones", label: "Presentaciones", icon: Package },
   { href: "/catalogos/proveedores", label: "Proveedores", icon: Truck },
   { href: "/catalogos/clientes", label: "Clientes", icon: Users },
+  { href: "/catalogos/fincas", label: "Fincas", icon: Mountain },
+  { href: "/catalogos/articulos", label: "Insumos y productos", icon: Boxes },
 ];
 
 export default function CatalogosPage() {
