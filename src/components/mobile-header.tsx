@@ -12,7 +12,7 @@ export function MobileHeader() {
       <button
         onClick={abrir}
         aria-label="Abrir menú"
-        className="min-h-11 min-w-11 rounded-md p-2 text-white hover:bg-sidebar-hover"
+        className="min-h-11 min-w-11 rounded-full p-2 text-white hover:bg-sidebar-hover"
       >
         <Menu size={22} />
       </button>

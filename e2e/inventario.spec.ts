@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seleccionarMd3PorTexto, seleccionarMd3PorIndice } from "./md3-helpers";
 
 const OPERADOR_EMAIL = process.env.E2E_USER_EMAIL;
 const OPERADOR_PASSWORD = process.env.E2E_USER_PASSWORD;
@@ -25,6 +26,17 @@ test.describe("Inventario y lotes (rol operador)", () => {
     page,
   }) => {
     await login(page, OPERADOR_EMAIL!, OPERADOR_PASSWORD!);
+
+    // Proceso propio sin pasos configurados: el catálogo real puede tener
+    // procesos con pasos (ej. "Lavado"), y este test asume un solo salto
+    // directo a pergamino — no puede depender de "el primero del catálogo".
+    const nombreProceso = `Proceso e2e directo ${crypto.randomUUID()}`;
+    await page.goto("/catalogos/procesos");
+    await page.getByRole("button", { name: "Nuevo" }).click();
+    await page.getByLabel("Nombre").fill(nombreProceso);
+    await page.getByRole("button", { name: "Guardar" }).click();
+    await expect(page.getByText(nombreProceso)).toBeVisible();
+
     await page.goto("/inventario");
 
     // Nombre único como marca: se conserva a través de todas las
@@ -40,8 +52,8 @@ test.describe("Inventario y lotes (rol operador)", () => {
     // matchea por substring si se busca sin escopear.
     const formRegistrar = page.getByTestId("form-registrar-lote");
     await formRegistrar.getByLabel("Nombre del lote (opcional)").fill(nombreLote);
-    await formRegistrar.getByLabel("Variedad").selectOption({ index: 1 });
-    await formRegistrar.getByLabel("Etapa inicial").selectOption("cereza");
+    await seleccionarMd3PorIndice(formRegistrar.getByTestId("select-variedad_id"), 1);
+    await seleccionarMd3PorTexto(formRegistrar.getByTestId("select-etapa"), "Cereza");
     await formRegistrar.getByLabel("Cajuelas recibidas").fill(String(cajuelas));
     await formRegistrar.getByRole("button", { name: "Guardar" }).click();
 
@@ -54,7 +66,7 @@ test.describe("Inventario y lotes (rol operador)", () => {
     // Al abrir el formulario, el texto de la fila cambia — se ubica por su
     // propio data-testid en vez de seguir escopeado a filaCereza.
     const formProceso = page.getByTestId("form-aplicar-proceso");
-    await formProceso.getByLabel("Proceso de beneficiado").selectOption({ index: 1 });
+    await seleccionarMd3PorTexto(formProceso.getByTestId("select-proceso_beneficiado_id"), nombreProceso);
     await formProceso.getByLabel("Merma (%)").fill("20");
     await formProceso.getByRole("button", { name: "Aplicar", exact: true }).click();
 
@@ -108,8 +120,8 @@ test.describe("Inventario y lotes (rol operador)", () => {
     await page.getByRole("button", { name: "Registrar lote" }).click();
     const formRegistrar = page.getByTestId("form-registrar-lote");
     await formRegistrar.getByLabel("Nombre del lote (opcional)").fill(nombreLote);
-    await formRegistrar.getByLabel("Variedad").selectOption({ index: 1 });
-    await formRegistrar.getByLabel("Etapa inicial").selectOption("cereza");
+    await seleccionarMd3PorIndice(formRegistrar.getByTestId("select-variedad_id"), 1);
+    await seleccionarMd3PorTexto(formRegistrar.getByTestId("select-etapa"), "Cereza");
     await formRegistrar.getByLabel("Cajuelas recibidas").fill(String(cajuelas));
     await formRegistrar.getByRole("button", { name: "Guardar" }).click();
 
@@ -119,7 +131,7 @@ test.describe("Inventario y lotes (rol operador)", () => {
     // Iniciar beneficiado -> primer paso (Fermentado)
     await fila.getByRole("button", { name: "Aplicar proceso" }).click();
     let form = page.getByTestId("form-aplicar-proceso");
-    await form.getByLabel("Proceso de beneficiado").selectOption({ label: nombreProceso });
+    await seleccionarMd3PorTexto(form.getByTestId("select-proceso_beneficiado_id"), nombreProceso);
     await form.getByLabel("Merma (%)").fill("0");
     await form.getByRole("button", { name: "Aplicar", exact: true }).click();
 
@@ -202,8 +214,8 @@ test.describe("Inventario y lotes (rol operador)", () => {
 
     await page.getByRole("button", { name: "Registrar lote" }).click();
     const formRegistrar = page.getByTestId("form-registrar-lote");
-    await formRegistrar.getByLabel("Variedad").selectOption({ index: 1 });
-    await formRegistrar.getByLabel("Etapa inicial").selectOption("verde");
+    await seleccionarMd3PorIndice(formRegistrar.getByTestId("select-variedad_id"), 1);
+    await seleccionarMd3PorTexto(formRegistrar.getByTestId("select-etapa"), "Verde");
     await formRegistrar.getByLabel("Peso (kg)").fill(String(pesoOrigen));
     await formRegistrar.getByRole("button", { name: "Guardar" }).click();
 
@@ -296,8 +308,8 @@ test.describe("Eliminar lote (rol admin)", () => {
     await page.getByRole("button", { name: "Registrar lote" }).click();
     const formRegistrar = page.getByTestId("form-registrar-lote");
     await formRegistrar.getByLabel("Nombre del lote (opcional)").fill(nombreLote);
-    await formRegistrar.getByLabel("Variedad").selectOption({ index: 1 });
-    await formRegistrar.getByLabel("Etapa inicial").selectOption("verde");
+    await seleccionarMd3PorIndice(formRegistrar.getByTestId("select-variedad_id"), 1);
+    await seleccionarMd3PorTexto(formRegistrar.getByTestId("select-etapa"), "Verde");
     await formRegistrar.getByLabel("Peso (kg)").fill("50");
     await formRegistrar.getByRole("button", { name: "Guardar" }).click();
 

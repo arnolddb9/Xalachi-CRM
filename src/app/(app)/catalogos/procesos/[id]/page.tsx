@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { obtenerRolActual } from "@/lib/session";
-import { PasosBeneficiado } from "@/features/catalogos/pasos-beneficiado";
+import { PasosBeneficiadoCargador } from "@/features/catalogos/pasos-beneficiado-cargador";
 import { VolverACatalogos } from "@/features/catalogos/volver-catalogos";
 
 export default async function ProcesoBeneficiadoDetallePage({
@@ -21,12 +21,12 @@ export default async function ProcesoBeneficiadoDetallePage({
 
   return (
     <main className="mx-auto max-w-2xl p-4 sm:p-8">
-      <VolverACatalogos />
+      <VolverACatalogos href="/catalogos/procesos" label="Volver a procesos de beneficiado" />
       <h1 className="mb-1 text-lg font-semibold text-zinc-900">{proceso.nombre}</h1>
       <p className="mb-4 text-sm text-zinc-500">
         Secuencia de pasos entre cereza y pergamino para este proceso de beneficiado.
       </p>
-      <PasosBeneficiado
+      <PasosBeneficiadoCargador
         procesoBeneficiadoId={id}
         pasos={pasos ?? []}
         puedeEscribir={rol === "admin" || rol === "operador"}

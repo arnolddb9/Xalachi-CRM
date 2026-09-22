@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { obtenerRolActual } from "@/lib/session";
-import { ComprasTabla } from "@/features/compras/compras-tabla";
+import { ComprasMd3Cargador } from "@/features/compras/compras-md3-cargador";
 
 export default async function ComprasPage() {
   const supabase = await createClient();
@@ -29,9 +29,13 @@ export default async function ComprasPage() {
 
   return (
     <main className="mx-auto max-w-2xl p-4 sm:p-8">
-      <h1 className="mb-4 text-lg font-semibold text-zinc-900">Compras</h1>
-      <ComprasTabla
-        compras={compras ?? []}
+      <ComprasMd3Cargador
+        compras={(compras ?? []).map((c) => ({
+          ...c,
+          costo_total: c.costo_total !== null ? Number(c.costo_total) : null,
+          cantidad: c.cantidad !== null ? Number(c.cantidad) : null,
+          lote: c.lote ? { ...c.lote, peso_actual_kg: Number(c.lote.peso_actual_kg) } : null,
+        }))}
         variedades={variedades ?? []}
         proveedores={proveedores ?? []}
         fincas={fincas ?? []}

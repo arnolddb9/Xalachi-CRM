@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { obtenerRolActual } from "@/lib/session";
-import { SimpleCatalogo } from "@/features/catalogos/simple-catalogo";
+import { SimpleCatalogoCargador } from "@/features/catalogos/simple-catalogo-cargador";
 import { VolverACatalogos } from "@/features/catalogos/volver-catalogos";
 
 export default async function ArticulosPage() {
@@ -13,8 +13,7 @@ export default async function ArticulosPage() {
   return (
     <main className="mx-auto max-w-2xl p-4 sm:p-8">
       <VolverACatalogos />
-      <h1 className="mb-4 text-lg font-semibold text-zinc-900">Insumos y productos</h1>
-      <SimpleCatalogo
+      <SimpleCatalogoCargador
         tabla="articulos"
         titulo="Artículos"
         campos={[

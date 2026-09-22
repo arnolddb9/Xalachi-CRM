@@ -14,6 +14,7 @@ import {
   clasificarCalidadSchema,
   configuracionSchema,
   ajustarStockSchema,
+  ajustarPrecioSchema,
 } from "./schemas";
 
 export type ActionState = { error?: string } | { success: true };
@@ -173,6 +174,7 @@ export async function aplicarTueste(
   const { error } = await supabase.rpc("aplicar_tueste", {
     p_lote_origen_id: parsed.data.lote_origen_id,
     p_perfil_tueste_id: parsed.data.perfil_tueste_id,
+    p_kg_a_procesar: parsed.data.kg_a_procesar,
     p_merma_pct: parsed.data.merma_pct,
   });
   if (error) return { error: error.message };
@@ -193,6 +195,7 @@ export async function aplicarMolido(
   const supabase = await createClient();
   const { error } = await supabase.rpc("aplicar_molido", {
     p_lote_origen_id: parsed.data.lote_origen_id,
+    p_kg_a_procesar: parsed.data.kg_a_procesar,
     p_merma_pct: parsed.data.merma_pct,
   });
   if (error) return { error: error.message };
@@ -295,5 +298,26 @@ export async function ajustarStockArticulo(
   if (error) return { error: error.message };
 
   revalidatePath("/inventario");
+  return { success: true };
+}
+
+export async function actualizarPrecioArticulo(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = ajustarPrecioSchema.safeParse(datosDesdeFormulario(formData));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("articulos")
+    .update({ precio_venta: parsed.data.precio_nuevo })
+    .eq("id", parsed.data.articulo_id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/inventario");
+  revalidatePath("/pedidos", "layout");
   return { success: true };
 }

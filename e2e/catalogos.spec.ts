@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seleccionarMd3PorTexto } from "./md3-helpers";
 
 const OPERADOR_EMAIL = process.env.E2E_USER_EMAIL;
 const OPERADOR_PASSWORD = process.env.E2E_USER_PASSWORD;
@@ -87,7 +88,7 @@ test.describe("Catálogo rico — clientes (rol vendedor)", () => {
 
     await page.getByRole("button", { name: "Nuevo" }).click();
     await page.getByLabel("Nombre").fill(nombre);
-    await page.getByLabel("Tipo").selectOption("mayoreo");
+    await seleccionarMd3PorTexto(page.getByTestId("select-tipo"), "Mayoreo");
     await page.getByLabel("Correo").fill("cliente-e2e@xalachi.test");
     await page.getByRole("button", { name: "Guardar" }).click();
 

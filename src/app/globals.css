@@ -2,33 +2,87 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #18181b;
 
-  --color-primary: #2563eb; /* blue-600 */
-  --color-primary-dark: #1d4ed8; /* blue-700 */
-  --color-primary-soft: #dbeafe; /* blue-100 */
-  --color-accent: #10b981; /* emerald-500 */
-  --color-accent-soft: #d1fae5; /* emerald-100 */
-  --color-sidebar: #0f172a; /* slate-900 */
-  --color-sidebar-hover: #1e293b; /* slate-800 */
+  /* Roles de color Material Design 3, derivados de la paleta azul/verde
+     corporativa ya existente (no se cambia la identidad de marca). */
+  --md-primary: #2563eb; /* blue-600 */
+  --md-primary-dark: #1d4ed8; /* blue-700 */
+  --md-on-primary: #ffffff;
+  --md-primary-container: #dbeafe; /* blue-100 */
+  --md-on-primary-container: #1e3a8a; /* blue-900 */
+
+  --md-secondary: #10b981; /* emerald-500 */
+  --md-on-secondary: #ffffff;
+  --md-secondary-container: #d1fae5; /* emerald-100 */
+  --md-on-secondary-container: #065f46; /* emerald-800 */
+
+  --md-error: #dc2626; /* red-600 */
+  --md-error-container: #fee2e2; /* red-100 */
+  --md-on-error-container: #991b1b; /* red-800 */
+
+  --md-warning-container: #fef3c7; /* amber-100 */
+  --md-on-warning-container: #92400e; /* amber-800 */
+
+  --md-surface: #ffffff;
+  --md-surface-container: #f4f4f5; /* zinc-100 */
+  --md-surface-container-high: #e4e4e7; /* zinc-200 */
+  --md-on-surface: #18181b; /* zinc-900 */
+  --md-on-surface-variant: #71717a; /* zinc-500 */
+  --md-outline: #d4d4d8; /* zinc-300 */
+  --md-outline-variant: #e4e4e7; /* zinc-200 */
+
+  --md-sidebar: #0f172a; /* slate-900 */
+  --md-sidebar-hover: #1e293b; /* slate-800 */
+
+  --md-elevation-1: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 1px 3px 1px rgb(0 0 0 / 0.06);
+  --md-elevation-2: 0 1px 2px 0 rgb(0 0 0 / 0.06), 0 2px 6px 2px rgb(0 0 0 / 0.08);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-primary: var(--color-primary);
-  --color-primary-dark: var(--color-primary-dark);
-  --color-primary-soft: var(--color-primary-soft);
-  --color-accent: var(--color-accent);
-  --color-accent-soft: var(--color-accent-soft);
-  --color-sidebar: var(--color-sidebar);
-  --color-sidebar-hover: var(--color-sidebar-hover);
-  --font-sans: var(--font-geist-sans);
+
+  /* Nombres ya usados en todo el sistema — se conservan para no romper
+     nada fuera del piloto, apuntando a los nuevos roles de color M3. */
+  --color-primary: var(--md-primary);
+  --color-primary-dark: var(--md-primary-dark);
+  --color-primary-soft: var(--md-primary-container);
+  --color-accent: var(--md-secondary);
+  --color-accent-soft: var(--md-secondary-container);
+  --color-sidebar: var(--md-sidebar);
+  --color-sidebar-hover: var(--md-sidebar-hover);
+
+  /* Tokens M3 nuevos, usados por las primitivas en src/components/ui/. */
+  --color-on-primary: var(--md-on-primary);
+  --color-primary-container: var(--md-primary-container);
+  --color-on-primary-container: var(--md-on-primary-container);
+  --color-secondary: var(--md-secondary);
+  --color-on-secondary: var(--md-on-secondary);
+  --color-secondary-container: var(--md-secondary-container);
+  --color-on-secondary-container: var(--md-on-secondary-container);
+  --color-error: var(--md-error);
+  --color-error-container: var(--md-error-container);
+  --color-on-error-container: var(--md-on-error-container);
+  --color-warning-container: var(--md-warning-container);
+  --color-on-warning-container: var(--md-on-warning-container);
+  --color-surface: var(--md-surface);
+  --color-surface-container: var(--md-surface-container);
+  --color-surface-container-high: var(--md-surface-container-high);
+  --color-on-surface: var(--md-on-surface);
+  --color-on-surface-variant: var(--md-on-surface-variant);
+  --color-outline: var(--md-outline);
+  --color-outline-variant: var(--md-outline-variant);
+
+  --shadow-elevation-1: var(--md-elevation-1);
+  --shadow-elevation-2: var(--md-elevation-2);
+
+  --font-sans: var(--font-roboto);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }

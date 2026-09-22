@@ -136,31 +136,56 @@ describe("aplicarTrilladoSchema", () => {
 });
 
 describe("aplicarTuesteSchema", () => {
-  it("acepta un perfil y una merma dentro de rango", () => {
+  it("acepta un perfil, cantidad a tostar y una merma dentro de rango", () => {
     const parsed = aplicarTuesteSchema.safeParse({
       lote_origen_id: UUID,
       perfil_tueste_id: UUID,
+      kg_a_procesar: "5",
       merma_pct: "15",
     });
     expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.kg_a_procesar).toBe(5);
   });
 
   it("rechaza si falta el perfil de tueste", () => {
     expect(
-      aplicarTuesteSchema.safeParse({ lote_origen_id: UUID, merma_pct: "15" }).success,
+      aplicarTuesteSchema.safeParse({ lote_origen_id: UUID, kg_a_procesar: "5", merma_pct: "15" })
+        .success,
+    ).toBe(false);
+  });
+
+  it("rechaza cantidad a procesar 0 o negativa", () => {
+    expect(
+      aplicarTuesteSchema.safeParse({
+        lote_origen_id: UUID,
+        perfil_tueste_id: UUID,
+        kg_a_procesar: "0",
+        merma_pct: "15",
+      }).success,
     ).toBe(false);
   });
 });
 
 describe("aplicarMolidoSchema", () => {
-  it("acepta una merma dentro de rango, sin perfil", () => {
-    const parsed = aplicarMolidoSchema.safeParse({ lote_origen_id: UUID, merma_pct: "3" });
+  it("acepta cantidad a moler y una merma dentro de rango, sin perfil", () => {
+    const parsed = aplicarMolidoSchema.safeParse({
+      lote_origen_id: UUID,
+      kg_a_procesar: "3",
+      merma_pct: "3",
+    });
     expect(parsed.success).toBe(true);
   });
 
   it("rechaza merma fuera de rango", () => {
     expect(
-      aplicarMolidoSchema.safeParse({ lote_origen_id: UUID, merma_pct: "101" }).success,
+      aplicarMolidoSchema.safeParse({ lote_origen_id: UUID, kg_a_procesar: "3", merma_pct: "101" })
+        .success,
+    ).toBe(false);
+  });
+
+  it("rechaza si falta la cantidad a procesar", () => {
+    expect(
+      aplicarMolidoSchema.safeParse({ lote_origen_id: UUID, merma_pct: "3" }).success,
     ).toBe(false);
   });
 });

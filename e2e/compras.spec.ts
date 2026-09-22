@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seleccionarMd3PorTexto, seleccionarMd3PorIndice } from "./md3-helpers";
 
 const OPERADOR_EMAIL = process.env.E2E_USER_EMAIL;
 const OPERADOR_PASSWORD = process.env.E2E_USER_PASSWORD;
@@ -36,9 +37,9 @@ test.describe("Compras (rol admin)", () => {
 
     await page.getByRole("button", { name: "Registrar compra" }).click();
     const formRegistrar = page.getByTestId("form-registrar-compra-lote");
-    await formRegistrar.getByLabel("Proveedor").selectOption({ index: 1 });
-    await formRegistrar.getByLabel("Variedad").selectOption({ index: 1 });
-    await formRegistrar.getByLabel("Etapa en la que se compra").selectOption("verde");
+    await seleccionarMd3PorIndice(formRegistrar.getByTestId("select-proveedor_id"), 1);
+    await seleccionarMd3PorIndice(formRegistrar.getByTestId("select-variedad_id"), 1);
+    await seleccionarMd3PorTexto(formRegistrar.getByTestId("select-etapa"), "Verde");
     await formRegistrar.getByLabel("Peso (kg)").fill("80");
     await formRegistrar.getByLabel("Costo total (opcional)").fill("1200");
     await formRegistrar.getByLabel("Folio / factura (opcional)").fill(folio);
@@ -47,7 +48,7 @@ test.describe("Compras (rol admin)", () => {
     const fila = page.getByTestId("fila-compra").filter({ hasText: folio });
     await expect(fila).toBeVisible();
     await expect(fila.getByText("Verde")).toBeVisible();
-    await expect(fila.getByText("$1200")).toBeVisible();
+    await expect(fila.getByText(/₡1\s?200,00/)).toBeVisible();
 
     // El lote generado se puede ver desde el link de la compra
     const hrefLote = await fila.getByRole("link", { name: "Ver lote" }).getAttribute("href");
@@ -58,7 +59,9 @@ test.describe("Compras (rol admin)", () => {
     await formEditar.getByLabel("Costo total (opcional)").fill("1300");
     await formEditar.getByRole("button", { name: "Guardar" }).click();
 
-    await expect(page.getByTestId("fila-compra").filter({ hasText: folio }).getByText("$1300")).toBeVisible();
+    await expect(
+      page.getByTestId("fila-compra").filter({ hasText: folio }).getByText(/₡1\s?300,00/),
+    ).toBeVisible();
 
     page.once("dialog", (dialog) => dialog.accept());
     await page.getByTestId("fila-compra").filter({ hasText: folio }).getByRole("button", { name: "Eliminar" }).click();
@@ -80,7 +83,7 @@ test.describe("Compras (rol admin)", () => {
     await page.goto("/catalogos/articulos");
     await page.getByRole("button", { name: "Nuevo" }).click();
     await page.getByLabel("Nombre").fill(nombreArticulo);
-    await page.getByLabel("Tipo").selectOption("insumo");
+    await seleccionarMd3PorTexto(page.getByTestId("select-tipo"), "Insumo");
     await page.getByLabel("Unidad de medida").fill("pieza");
     await page.getByRole("button", { name: "Guardar" }).click();
     await expect(page.getByText(nombreArticulo)).toBeVisible();
@@ -89,10 +92,10 @@ test.describe("Compras (rol admin)", () => {
     const folio = `E2E ${crypto.randomUUID()}`;
 
     await page.getByRole("button", { name: "Registrar compra" }).click();
-    await page.getByLabel("Tipo de compra").selectOption("insumo");
+    await seleccionarMd3PorTexto(page.getByTestId("select-tipo_compra_ui"), "Insumo");
     const formRegistrar = page.getByTestId("form-registrar-compra-articulo");
-    await formRegistrar.getByLabel("Proveedor").selectOption({ label: nombreProveedor });
-    await formRegistrar.getByLabel("Artículo").selectOption({ label: nombreArticulo });
+    await seleccionarMd3PorTexto(formRegistrar.getByTestId("select-proveedor_id"), nombreProveedor);
+    await seleccionarMd3PorTexto(formRegistrar.getByTestId("select-articulo_id"), nombreArticulo);
     await formRegistrar.getByLabel("Cantidad").fill("30");
     await formRegistrar.getByLabel("Costo total (opcional)").fill("450");
     await formRegistrar.getByLabel("Folio / factura (opcional)").fill(folio);
@@ -106,7 +109,7 @@ test.describe("Compras (rol admin)", () => {
     // Inventario abre en la pestaña de lotes; hay que cambiar a la de
     // insumos y productos para ver las existencias del artículo.
     await page.goto("/inventario");
-    await page.getByRole("button", { name: "Insumos y productos" }).click();
+    await page.getByText("Insumos", { exact: true }).click();
     const filaArticulo = page.getByTestId("fila-articulo").filter({ hasText: nombreArticulo });
     await expect(filaArticulo.getByText("30 pieza")).toBeVisible();
 
@@ -116,7 +119,7 @@ test.describe("Compras (rol admin)", () => {
     await expect(page.getByTestId("fila-compra").filter({ hasText: folio })).toHaveCount(0);
 
     await page.goto("/inventario");
-    await page.getByRole("button", { name: "Insumos y productos" }).click();
+    await page.getByText("Insumos", { exact: true }).click();
     await expect(
       page.getByTestId("fila-articulo").filter({ hasText: nombreArticulo }).getByText("30 pieza"),
     ).not.toBeVisible();

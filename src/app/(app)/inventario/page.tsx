@@ -1,9 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { obtenerRolActual } from "@/lib/session";
-import { LotesTabla } from "@/features/inventario/lotes-tabla";
-import { FiltrosLotes } from "@/features/inventario/filtros-lotes";
-import { ArticulosTabla } from "@/features/inventario/articulos-tabla";
-import { InventarioTabs } from "@/features/inventario/inventario-tabs";
+import { InventarioMd3Cargador } from "@/features/inventario/inventario-md3-cargador";
 
 const ETAPAS_CONOCIDAS = ["cereza", "pergamino", "verde", "tostado", "molido"];
 
@@ -62,16 +59,14 @@ export default async function InventarioPage({
     supabase.from("configuracion").select("factor_kg_por_cajuela").eq("id", 1).single(),
     supabase
       .from("articulos")
-      .select("id, nombre, tipo, unidad_medida, stock_actual")
+      .select("id, nombre, tipo, unidad_medida, stock_actual, precio_venta")
       .eq("activo", true)
       .order("nombre"),
     obtenerRolActual(),
   ]);
 
   const totalKg = (etapaFiltro: (etapa: string) => boolean) =>
-    (lotes ?? [])
-      .filter((l) => etapaFiltro(l.etapa))
-      .reduce((acc, l) => acc + Number(l.peso_actual_kg), 0);
+    (lotes ?? []).filter((l) => etapaFiltro(l.etapa)).reduce((acc, l) => acc + Number(l.peso_actual_kg), 0);
 
   const resumenPorEtapa = [
     { etiqueta: "Cereza", totalKg: totalKg((e) => e === "cereza") },
@@ -84,36 +79,24 @@ export default async function InventarioPage({
 
   return (
     <main className="mx-auto max-w-2xl p-4 sm:p-8">
-      <h1 className="mb-4 text-lg font-semibold text-zinc-900">Inventario</h1>
-      <InventarioTabs
-        tabLotes={
-          <>
-            <FiltrosLotes
-              variedades={variedades ?? []}
-              proveedores={proveedores ?? []}
-              fincas={fincas ?? []}
-              procesosBeneficiado={procesos ?? []}
-              valoresIniciales={{ finca_id, variedad_id, proceso_beneficiado_id, proveedor_id, etapa, desde, hasta }}
-            />
-            <LotesTabla
-              lotes={lotes ?? []}
-              resumenPorEtapa={resumenPorEtapa}
-              variedades={variedades ?? []}
-              proveedores={proveedores ?? []}
-              fincas={fincas ?? []}
-              procesosBeneficiado={procesos ?? []}
-              perfilesTueste={perfilesTueste ?? []}
-              articulos={articulos ?? []}
-              presentaciones={presentaciones ?? []}
-              factorCajuela={Number(configuracion?.factor_kg_por_cajuela ?? 13.6)}
-              puedeEscribir={rol === "admin" || rol === "operador"}
-              esAdmin={rol === "admin"}
-            />
-          </>
-        }
-        tabArticulos={
-          <ArticulosTabla articulos={articulos ?? []} puedeEscribir={rol === "admin" || rol === "operador"} />
-        }
+      <InventarioMd3Cargador
+        lotes={(lotes ?? []).map((l) => ({ ...l, peso_actual_kg: Number(l.peso_actual_kg) }))}
+        resumenPorEtapa={resumenPorEtapa}
+        variedades={variedades ?? []}
+        proveedores={proveedores ?? []}
+        fincas={fincas ?? []}
+        procesosBeneficiado={procesos ?? []}
+        perfilesTueste={perfilesTueste ?? []}
+        articulos={(articulos ?? []).map((a) => ({
+          ...a,
+          stock_actual: Number(a.stock_actual),
+          precio_venta: Number(a.precio_venta),
+        }))}
+        presentaciones={presentaciones ?? []}
+        factorCajuela={Number(configuracion?.factor_kg_por_cajuela ?? 13.6)}
+        puedeEscribir={rol === "admin" || rol === "operador"}
+        esAdmin={rol === "admin"}
+        valoresFiltroIniciales={{ finca_id, variedad_id, proceso_beneficiado_id, proveedor_id, etapa, desde, hasta }}
       />
     </main>
   );

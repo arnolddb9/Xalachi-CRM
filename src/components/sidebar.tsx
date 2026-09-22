@@ -10,6 +10,7 @@ import {
   ShoppingCart,
   Flame,
   Wrench,
+  FileText,
   ClipboardList,
   Receipt,
   BarChart3,
@@ -25,6 +26,7 @@ const MODULOS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/compras", label: "Compras", icon: ShoppingCart },
   { href: "/produccion", label: "Producción", icon: Flame },
   { href: "/servicios", label: "Servicios", icon: Wrench },
+  { href: "/presupuestos", label: "Presupuestos", icon: FileText },
   { href: "/pedidos", label: "Pedidos", icon: ClipboardList },
   { href: "/ventas", label: "Ventas", icon: Receipt },
   { href: "/reportes", label: "Reportes", icon: BarChart3 },
@@ -41,9 +43,9 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
             key={m.href}
             href={m.href}
             onClick={onNavigate}
-            className={`flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            className={`flex min-h-11 items-center gap-3 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
               activo
-                ? "bg-primary text-white"
+                ? "bg-primary-container text-on-primary-container"
                 : "text-slate-300 hover:bg-sidebar-hover hover:text-white"
             }`}
           >
@@ -91,7 +93,7 @@ export function Sidebar() {
                 <button
                   onClick={cerrar}
                   aria-label="Cerrar menú"
-                  className="min-h-11 min-w-11 rounded-md p-2 text-white hover:bg-sidebar-hover"
+                  className="min-h-11 min-w-11 rounded-full p-2 text-white hover:bg-sidebar-hover"
                 >
                   <X size={20} />
                 </button>

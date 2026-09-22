@@ -78,14 +78,22 @@ const kgOpcional = z
   .transform((v) => (v ? Number(v) : 0))
   .refine((v) => Number.isFinite(v) && v >= 0, { message: "Debe ser un número mayor o igual a 0." });
 
+const kgAProcesarSchema = z
+  .string()
+  .trim()
+  .transform((v) => Number(v))
+  .refine((v) => Number.isFinite(v) && v > 0, { message: "La cantidad debe ser mayor a 0." });
+
 export const aplicarTuesteSchema = z.object({
   lote_origen_id: uuid,
   perfil_tueste_id: uuid,
+  kg_a_procesar: kgAProcesarSchema,
   merma_pct: mermaSchema,
 });
 
 export const aplicarMolidoSchema = z.object({
   lote_origen_id: uuid,
+  kg_a_procesar: kgAProcesarSchema,
   merma_pct: mermaSchema,
 });
 
@@ -121,6 +129,15 @@ export const ajustarStockSchema = z.object({
     .trim()
     .transform((v) => Number(v))
     .refine((v) => Number.isFinite(v) && v >= 0, { message: "El stock debe ser mayor o igual a 0." }),
+});
+
+export const ajustarPrecioSchema = z.object({
+  articulo_id: uuid,
+  precio_nuevo: z
+    .string()
+    .trim()
+    .transform((v) => Number(v))
+    .refine((v) => Number.isFinite(v) && v >= 0, { message: "El precio debe ser mayor o igual a 0." }),
 });
 
 export const configuracionSchema = z.object({

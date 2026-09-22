@@ -1,0 +1,65 @@
+/* Tema Material Design 3 nativo (componentes @material/web), derivado de la
+   misma paleta azul/verde corporativa usada en el resto del sistema.
+   Solo se sobreescriben los tokens de color: forma, tipografía y elevación
+   ya traen valores base correctos en cada componente de @material/web. */
+.md3-scope {
+  --md-sys-color-primary: #2563eb;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #dbeafe;
+  --md-sys-color-on-primary-container: #1e3a8a;
+  --md-sys-color-primary-fixed: #dbeafe;
+  --md-sys-color-primary-fixed-dim: #bfdbfe;
+  --md-sys-color-on-primary-fixed: #1e3a8a;
+  --md-sys-color-on-primary-fixed-variant: #1d4ed8;
+  --md-sys-color-inverse-primary: #93c5fd;
+
+  --md-sys-color-secondary: #10b981;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #d1fae5;
+  --md-sys-color-on-secondary-container: #065f46;
+  --md-sys-color-secondary-fixed: #d1fae5;
+  --md-sys-color-secondary-fixed-dim: #a7f3d0;
+  --md-sys-color-on-secondary-fixed: #065f46;
+  --md-sys-color-on-secondary-fixed-variant: #047857;
+
+  --md-sys-color-tertiary: #d97706;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #fef3c7;
+  --md-sys-color-on-tertiary-container: #78350f;
+  --md-sys-color-tertiary-fixed: #fef3c7;
+  --md-sys-color-tertiary-fixed-dim: #fde68a;
+  --md-sys-color-on-tertiary-fixed: #78350f;
+  --md-sys-color-on-tertiary-fixed-variant: #92400e;
+
+  --md-sys-color-error: #dc2626;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #fee2e2;
+  --md-sys-color-on-error-container: #991b1b;
+
+  --md-sys-color-surface: #ffffff;
+  --md-sys-color-surface-dim: #e4e4e7;
+  --md-sys-color-surface-bright: #ffffff;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #fafafa;
+  --md-sys-color-surface-container: #f4f4f5;
+  --md-sys-color-surface-container-high: #e4e4e7;
+  --md-sys-color-surface-container-highest: #d4d4d8;
+  --md-sys-color-surface-variant: #e4e4e7;
+  --md-sys-color-on-surface: #18181b;
+  --md-sys-color-on-surface-variant: #52525b;
+
+  --md-sys-color-outline: #a1a1aa;
+  --md-sys-color-outline-variant: #d4d4d8;
+
+  --md-sys-color-inverse-surface: #27272a;
+  --md-sys-color-inverse-on-surface: #fafafa;
+
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-surface-tint: var(--md-sys-color-primary);
+
+  display: block;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font-family: var(--font-sans), Roboto, Arial, sans-serif;
+}

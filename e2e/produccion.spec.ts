@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seleccionarMd3PorTexto, seleccionarMd3PorIndice } from "./md3-helpers";
 
 const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL;
 const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD;
@@ -31,7 +32,7 @@ test.describe("Producción: tueste, molido y empacado (rol admin)", () => {
     await page.goto("/catalogos/tueste");
     await page.getByRole("button", { name: "Nuevo" }).click();
     await page.getByLabel("Nombre").fill(nombrePerfil);
-    await page.getByLabel("Nivel").selectOption("medio");
+    await seleccionarMd3PorTexto(page.getByTestId("select-nivel"), "Medio");
     await page.getByRole("button", { name: "Guardar" }).click();
     await expect(page.getByText(nombrePerfil)).toBeVisible();
 
@@ -45,21 +46,21 @@ test.describe("Producción: tueste, molido y empacado (rol admin)", () => {
     await page.goto("/catalogos/articulos");
     await page.getByRole("button", { name: "Nuevo" }).click();
     await page.getByLabel("Nombre").fill(nombreProducto);
-    await page.getByLabel("Tipo").selectOption("producto_terminado");
+    await seleccionarMd3PorTexto(page.getByTestId("select-tipo"), "Producto terminado");
     await page.getByLabel("Unidad de medida").fill("bolsa");
     await page.getByRole("button", { name: "Guardar" }).click();
     await expect(page.getByText(nombreProducto)).toBeVisible();
 
     await page.getByRole("button", { name: "Nuevo" }).click();
     await page.getByLabel("Nombre").fill(nombreInsumo);
-    await page.getByLabel("Tipo").selectOption("insumo");
+    await seleccionarMd3PorTexto(page.getByTestId("select-tipo"), "Insumo");
     await page.getByLabel("Unidad de medida").fill("pieza");
     await page.getByRole("button", { name: "Guardar" }).click();
     await expect(page.getByText(nombreInsumo)).toBeVisible();
 
     // Insumo con existencia inicial suficiente para empacar después
     await page.goto("/inventario");
-    await page.getByRole("button", { name: "Insumos y productos" }).click();
+    await page.getByText("Insumos", { exact: true }).click();
     await page.getByTestId("fila-articulo").filter({ hasText: nombreInsumo }).getByRole("button", { name: "Ajustar existencias" }).click();
     await page.getByTestId("form-ajustar-stock").getByRole("spinbutton").fill("100");
     await page.getByTestId("form-ajustar-stock").getByRole("button", { name: "Guardar" }).click();
@@ -69,12 +70,12 @@ test.describe("Producción: tueste, molido y empacado (rol admin)", () => {
 
     // Registrar un lote directo en verde
     const nombreLote = `E2E ${marca}`;
-    await page.getByRole("button", { name: "Inventario y lotes" }).click();
+    await page.getByText("Inventario y lotes", { exact: true }).click();
     await page.getByRole("button", { name: "Registrar lote" }).click();
     const formRegistrar = page.getByTestId("form-registrar-lote");
     await formRegistrar.getByLabel("Nombre del lote (opcional)").fill(nombreLote);
-    await formRegistrar.getByLabel("Variedad").selectOption({ index: 1 });
-    await formRegistrar.getByLabel("Etapa inicial").selectOption("verde");
+    await seleccionarMd3PorIndice(formRegistrar.getByTestId("select-variedad_id"), 1);
+    await seleccionarMd3PorTexto(formRegistrar.getByTestId("select-etapa"), "Verde");
     await formRegistrar.getByLabel("Peso (kg)").fill("10");
     await formRegistrar.getByRole("button", { name: "Guardar" }).click();
 
@@ -84,7 +85,7 @@ test.describe("Producción: tueste, molido y empacado (rol admin)", () => {
     // Tostar
     await fila.getByRole("button", { name: "Tostar" }).click();
     let form = page.getByTestId("form-aplicar-proceso");
-    await form.getByLabel("Perfil de tueste").selectOption({ index: 1 });
+    await seleccionarMd3PorIndice(form.getByTestId("select-perfil_tueste_id"), 1);
     await form.getByLabel("Merma (%)").fill("10");
     await form.getByRole("button", { name: "Aplicar", exact: true }).click();
 
@@ -104,10 +105,10 @@ test.describe("Producción: tueste, molido y empacado (rol admin)", () => {
     // bolsas de 250g (2.5 kg) deja el resto disponible en el lote.
     await fila.getByRole("button", { name: "Empacar" }).click();
     const formEmpacar = page.getByTestId("form-empacar");
-    await formEmpacar.getByLabel("Producto terminado").selectOption({ label: nombreProducto });
-    await formEmpacar.getByLabel("Presentación").selectOption({ label: `${nombrePresentacion} (250 g)` });
+    await seleccionarMd3PorTexto(formEmpacar.getByTestId("select-articulo_id"), nombreProducto);
+    await seleccionarMd3PorTexto(formEmpacar.getByTestId("select-presentacion_id"), `${nombrePresentacion} (250 g)`);
     await formEmpacar.getByLabel("Unidades a empacar").fill("10");
-    await formEmpacar.getByLabel("Insumo de empaque (opcional)").selectOption({ label: nombreInsumo });
+    await seleccionarMd3PorTexto(formEmpacar.getByTestId("select-insumo_articulo_id"), nombreInsumo);
     await formEmpacar.getByRole("button", { name: "Empacar" }).click();
 
     fila = page.getByTestId("fila-lote").filter({ hasText: nombreLote });
@@ -115,10 +116,11 @@ test.describe("Producción: tueste, molido y empacado (rol admin)", () => {
     await expect(fila.getByText("Molido")).toBeVisible();
     await expect(fila.getByText("6.05 kg")).toBeVisible();
 
-    await page.getByRole("button", { name: "Insumos y productos" }).click();
+    await page.getByText("Productos", { exact: true }).click();
     await expect(
       page.getByTestId("fila-articulo").filter({ hasText: nombreProducto }).getByText("10 bolsa"),
     ).toBeVisible();
+    await page.getByText("Insumos", { exact: true }).click();
     await expect(
       page.getByTestId("fila-articulo").filter({ hasText: nombreInsumo }).getByText("90 pieza"),
     ).toBeVisible();
@@ -126,7 +128,7 @@ test.describe("Producción: tueste, molido y empacado (rol admin)", () => {
     // El historial muestra el empacado, y eliminarlo revierte todo. Hay que
     // volver a la pestaña de lotes: el contenido de la otra pestaña queda
     // con `hidden`, y los elementos ocultos no se resuelven por rol.
-    await page.getByRole("button", { name: "Inventario y lotes" }).click();
+    await page.getByText("Inventario y lotes", { exact: true }).click();
     fila = page.getByTestId("fila-lote").filter({ hasText: nombreLote });
     const hrefHistorial = await fila.getByRole("link", { name: "Ver historial" }).getAttribute("href");
     expect(hrefHistorial).toBeTruthy();
@@ -139,16 +141,69 @@ test.describe("Producción: tueste, molido y empacado (rol admin)", () => {
     await expect(page.getByTestId("fila-empacado").filter({ hasText: nombreProducto })).toHaveCount(0);
 
     await page.goto("/inventario");
-    await page.getByRole("button", { name: "Insumos y productos" }).click();
+    await page.getByText("Productos", { exact: true }).click();
     await expect(
       page.getByTestId("fila-articulo").filter({ hasText: nombreProducto }).getByText("0 bolsa"),
     ).toBeVisible();
+    await page.getByText("Insumos", { exact: true }).click();
     await expect(
       page.getByTestId("fila-articulo").filter({ hasText: nombreInsumo }).getByText("100 pieza"),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Inventario y lotes" }).click();
+    await page.getByText("Inventario y lotes", { exact: true }).click();
     await expect(
       page.getByTestId("fila-lote").filter({ hasText: nombreLote }).getByText("8.55 kg"),
+    ).toBeVisible();
+  });
+
+  test("tostar y moler una parte del lote deja el resto disponible en la etapa de origen", async ({
+    page,
+  }) => {
+    await login(page, ADMIN_EMAIL!, ADMIN_PASSWORD!);
+
+    const nombreLote = `E2E ${crypto.randomUUID()}`;
+    await page.goto("/inventario");
+    await page.getByRole("button", { name: "Registrar lote" }).click();
+    const formRegistrar = page.getByTestId("form-registrar-lote");
+    await formRegistrar.getByLabel("Nombre del lote (opcional)").fill(nombreLote);
+    await seleccionarMd3PorIndice(formRegistrar.getByTestId("select-variedad_id"), 1);
+    await seleccionarMd3PorTexto(formRegistrar.getByTestId("select-etapa"), "Verde");
+    await formRegistrar.getByLabel("Peso (kg)").fill("10");
+    await formRegistrar.getByRole("button", { name: "Guardar" }).click();
+
+    const filaVerde = page.getByTestId("fila-lote").filter({ hasText: nombreLote }).filter({ hasText: "Verde" });
+    await expect(filaVerde).toBeVisible();
+
+    // Tostar solo 4 de los 10 kg disponibles (sin merma, para números exactos)
+    await filaVerde.getByRole("button", { name: "Tostar" }).click();
+    const formTueste = page.getByTestId("form-aplicar-proceso");
+    await seleccionarMd3PorIndice(formTueste.getByTestId("select-perfil_tueste_id"), 1);
+    await formTueste.getByLabel("Cantidad a tostar (kg)").fill("4");
+    await formTueste.getByLabel("Merma (%)").fill("0");
+    await formTueste.getByRole("button", { name: "Aplicar", exact: true }).click();
+
+    // El lote original sigue en verde con el resto (6 kg), y aparece un
+    // nuevo lote tostado de 4 kg — ambos con el mismo nombre.
+    await expect(
+      page.getByTestId("fila-lote").filter({ hasText: nombreLote }).filter({ hasText: "Verde" }).getByText("6 kg"),
+    ).toBeVisible();
+    const filaTostado = page
+      .getByTestId("fila-lote")
+      .filter({ hasText: nombreLote })
+      .filter({ hasText: "Tostado" });
+    await expect(filaTostado.getByText("4 kg")).toBeVisible();
+
+    // Moler solo 1.5 de los 4 kg tostados
+    await filaTostado.getByRole("button", { name: "Moler" }).click();
+    const formMolido = page.getByTestId("form-aplicar-proceso");
+    await formMolido.getByLabel("Cantidad a moler (kg)").fill("1.5");
+    await formMolido.getByLabel("Merma (%)").fill("0");
+    await formMolido.getByRole("button", { name: "Aplicar", exact: true }).click();
+
+    await expect(
+      page.getByTestId("fila-lote").filter({ hasText: nombreLote }).filter({ hasText: "Tostado" }).getByText("2.5 kg"),
+    ).toBeVisible();
+    await expect(
+      page.getByTestId("fila-lote").filter({ hasText: nombreLote }).filter({ hasText: "Molido" }).getByText("1.5 kg"),
     ).toBeVisible();
   });
 });

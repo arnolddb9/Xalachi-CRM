@@ -72,7 +72,10 @@ export function HistorialArbol({
           {nodo.lote.numero_cama_secado ? ` · cama ${nodo.lote.numero_cama_secado}` : ""}
           {nodo.lote.perfil_tueste?.nombre ? ` · ${nodo.lote.perfil_tueste.nombre}` : ""}
           {nodo.lote.fecha_cosecha ? ` · cosecha ${nodo.lote.fecha_cosecha}` : ""}
-          {nodo.lote.peso_actual_kg > 0 && nodo.hijos.length === 0 && nodo.empacados.length === 0 && (
+          {/* Con transformaciones parciales (tueste/molido/empacado) un lote
+              puede tener hijos o empacados Y seguir con peso disponible al
+              mismo tiempo — ya no es señal de "totalmente consumido". */}
+          {nodo.lote.peso_actual_kg > 0 && (
             <span className="text-accent"> · disponible ahora</span>
           )}
         </p>
