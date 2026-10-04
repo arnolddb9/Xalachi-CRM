@@ -25,6 +25,7 @@ import {
   ajustarStockArticulo,
   actualizarPrecioArticulo,
 } from "./actions";
+import { eliminarCatalogoGestionable } from "@/features/catalogos/actions";
 
 type Opcion = { id: string; nombre: string };
 type ArticuloOpcion = { id: string; nombre: string; tipo: string };
@@ -125,10 +126,10 @@ export function InventarioMd3Vista(props: InventarioMd3Props) {
 
       {tab === "lotes" && <TabLotes {...props} />}
       {tab === "insumos" && (
-        <TabArticulos articulos={insumos} puedeEscribir={props.puedeEscribir} titulo="Insumos" />
+        <TabArticulos articulos={insumos} puedeEscribir={props.puedeEscribir} esAdmin={props.esAdmin} titulo="Insumos" />
       )}
       {tab === "productos" && (
-        <TabArticulos articulos={productos} puedeEscribir={props.puedeEscribir} titulo="Productos terminados" />
+        <TabArticulos articulos={productos} puedeEscribir={props.puedeEscribir} esAdmin={props.esAdmin} titulo="Productos terminados" />
       )}
     </div>
   );
@@ -853,15 +854,44 @@ function FactorCajuelaControl({ factorActual }: { factorActual: number }) {
   );
 }
 
-function TabArticulos({ articulos, puedeEscribir, titulo }: { articulos: Articulo[]; puedeEscribir: boolean; titulo: string }) {
+function TabArticulos({
+  articulos,
+  puedeEscribir,
+  esAdmin,
+  titulo,
+}: {
+  articulos: Articulo[];
+  puedeEscribir: boolean;
+  esAdmin: boolean;
+  titulo: string;
+}) {
   const [ajustandoId, setAjustandoId] = useState<string | null>(null);
   const [editandoPrecioId, setEditandoPrecioId] = useState<string | null>(null);
+  const [isPendingEliminar, startTransitionEliminar] = useTransition();
+  const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
+
+  function handleEliminar(id: string, nombre: string) {
+    if (!window.confirm(`¿Eliminar "${nombre}" definitivamente? Esta acción no se puede deshacer.`)) return;
+    setErrorEliminar(null);
+    startTransitionEliminar(async () => {
+      const resultado = await eliminarCatalogoGestionable("articulos", id);
+      if ("error" in resultado && resultado.error) setErrorEliminar(resultado.error);
+    });
+  }
 
   return (
     <Md3Card>
       <div className="p-4" style={{ borderBottom: "1px solid var(--md-sys-color-outline-variant)" }}>
         <h2 className="text-sm font-semibold">{titulo}</h2>
       </div>
+      {errorEliminar && (
+        <p
+          className="p-3 text-sm"
+          style={{ borderBottom: "1px solid var(--md-sys-color-error-container)", color: "var(--md-sys-color-error)" }}
+        >
+          {errorEliminar}
+        </p>
+      )}
       <div>
         {articulos.length === 0 && (
           <p className="p-4 text-sm">Sin artículos registrados. Se dan de alta en Catálogos → Insumos y productos.</p>
@@ -898,6 +928,16 @@ function TabArticulos({ articulos, puedeEscribir, titulo }: { articulos: Articul
                     <Md3Button variant="outlined" minWidth={150} onClick={() => setAjustandoId(articulo.id)}>
                       Ajustar existencias
                     </Md3Button>
+                    {esAdmin && (
+                      <Md3Button
+                        variant="outlined"
+                        minWidth={90}
+                        disabled={isPendingEliminar}
+                        onClick={() => handleEliminar(articulo.id, articulo.nombre)}
+                      >
+                        Eliminar
+                      </Md3Button>
+                    )}
                   </div>
                 )}
               </div>
