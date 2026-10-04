@@ -51,19 +51,26 @@ export function Md3Select({
   return (
     <span
       data-testid={name ? `select-${name}` : undefined}
-      style={{ display: "inline-flex", flexDirection: "column", minWidth, flexShrink: 0, ...style }}
+      style={{ display: "inline-flex", flexDirection: "column", width: minWidth, maxWidth: "100%", flexShrink: 0, ...style }}
     >
       <md-outlined-select
         id={inputId}
         label={label}
         required={required}
         value={actual}
+        style={{ width: "100%" }}
         onInput={(e: FormEvent<HTMLElement>) => sincronizar(e.currentTarget as Md3El)}
         onChange={(e: FormEvent<HTMLElement>) => sincronizar(e.currentTarget as Md3El)}
       >
-        {placeholder && <md-select-option value="" headline={placeholder}></md-select-option>}
+        {placeholder && (
+          <md-select-option value="" headline={placeholder}>
+            <div slot="headline">{placeholder}</div>
+          </md-select-option>
+        )}
         {opciones.map((o) => (
-          <md-select-option key={o.value} value={o.value} headline={o.label}></md-select-option>
+          <md-select-option key={o.value} value={o.value} headline={o.label}>
+            <div slot="headline">{o.label}</div>
+          </md-select-option>
         ))}
       </md-outlined-select>
       {name && <input ref={hiddenRef} type="hidden" name={name} defaultValue={internalValue} />}
