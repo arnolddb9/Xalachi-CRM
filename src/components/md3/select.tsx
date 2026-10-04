@@ -58,7 +58,7 @@ export function Md3Select({
         label={label}
         required={required}
         value={actual}
-        style={{ width: "100%" }}
+        style={{ width: "100%", minWidth: 0 }}
         onInput={(e: FormEvent<HTMLElement>) => sincronizar(e.currentTarget as Md3El)}
         onChange={(e: FormEvent<HTMLElement>) => sincronizar(e.currentTarget as Md3El)}
       >
