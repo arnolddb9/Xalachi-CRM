@@ -430,7 +430,7 @@ function FiltrosLotesMd3({
 
   return (
     <Md3Card testId="filtros-lotes" style={{ padding: 16 }}>
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
         <Md3Select
           label="Finca"
           value={valores.finca_id}
@@ -474,6 +474,8 @@ function FiltrosLotesMd3({
         />
         <Md3TextField label="Cosecha desde" type="date" value={valores.desde} onValueChange={(v) => actualizar("desde", v)} />
         <Md3TextField label="Cosecha hasta" type="date" value={valores.hasta} onValueChange={(v) => actualizar("hasta", v)} />
+      </div>
+      <div className="mt-3 flex flex-wrap gap-3">
         <Md3Button onClick={aplicar} minWidth={110}>
           Filtrar
         </Md3Button>
@@ -518,7 +520,7 @@ function LoteForm({
 
   return (
     <form action={formAction} data-testid={lote ? "form-editar-lote" : "form-registrar-lote"} className="space-y-3">
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Md3TextField
           label="Nombre del lote (opcional)"
           name="nombre"
@@ -658,7 +660,7 @@ function ProcesoForm({
                 : `Continuar beneficiado (paso actual: ${lote.etapa})`}
       </p>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {esInicioBeneficiado && (
           <Md3Select
             label="Proceso de beneficiado"
@@ -718,7 +720,7 @@ function ClasificarCalidadForm({ lote, onGuardado }: { lote: Lote; onGuardado: (
     <form action={formAction} data-testid="form-clasificar-calidad" className="space-y-3">
       <input type="hidden" name="lote_origen_id" value={lote.id} />
       <p className="text-sm">Dividir {lote.peso_actual_kg} kg en calidades (la suma no puede exceder el peso disponible):</p>
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {(["primera", "segunda", "tercera", "rechazo"] as const).map((calidad) => (
           <Md3TextField key={calidad} label={`${CALIDAD_LABEL[calidad]} (kg)`} name={`${calidad}_kg`} type="number" step="0.01" min="0" />
         ))}
@@ -765,7 +767,7 @@ function EmpacarForm({
     <form action={formAction} data-testid="form-empacar" className="space-y-3">
       <input type="hidden" name="lote_origen_id" value={lote.id} />
       <p className="text-sm">Empacar desde {lote.peso_actual_kg} kg disponibles:</p>
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Md3Select
           label="Producto terminado"
           name="articulo_id"

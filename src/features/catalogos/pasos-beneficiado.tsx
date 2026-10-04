@@ -108,8 +108,8 @@ function PasoForm({
 
   return (
     <form action={formAction} className="space-y-3">
-      <div className="flex flex-wrap gap-3">
-        <Md3TextField label="Orden" name="orden" type="number" min="1" step="1" required defaultValue={paso?.orden ?? ""} minWidth={100} />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Md3TextField label="Orden" name="orden" type="number" min="1" step="1" required defaultValue={paso?.orden ?? ""} />
         <Md3TextField label="Nombre del paso" name="nombre" required defaultValue={paso?.nombre ?? ""} />
       </div>
 

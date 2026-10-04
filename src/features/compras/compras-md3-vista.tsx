@@ -263,7 +263,7 @@ function RegistrarCompraLoteForm({
 
   return (
     <form action={formAction} data-testid="form-registrar-compra-lote" className="space-y-3">
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Md3TextField label="Nombre del lote (opcional)" name="nombre" placeholder="ej. Finca El Mirador — lote 3" style={{ minWidth: 260 }} />
         <Md3Select label="Proveedor" name="proveedor_id" required placeholder="Selecciona un proveedor" opciones={proveedores.map((p) => ({ value: p.id, label: p.nombre }))} />
         <Md3Select label="Variedad" name="variedad_id" required placeholder="Selecciona una variedad" opciones={variedades.map((v) => ({ value: v.id, label: v.nombre }))} />
@@ -332,7 +332,7 @@ function RegistrarCompraArticuloForm({
 
   return (
     <form action={formAction} data-testid="form-registrar-compra-articulo" className="space-y-3">
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Md3Select label="Proveedor" name="proveedor_id" required placeholder="Selecciona un proveedor" opciones={proveedores.map((p) => ({ value: p.id, label: p.nombre }))} />
         <Md3Select
           label="Artículo"
@@ -369,7 +369,7 @@ function EditarCompraForm({ compra, onGuardado }: { compra: Compra; onGuardado: 
 
   return (
     <form action={formAction} data-testid="form-editar-compra" className="space-y-3">
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Md3TextField label="Fecha de compra" name="fecha_compra" type="date" defaultValue={compra.fecha_compra} />
         <Md3TextField label="Costo total (opcional)" name="costo_total" type="number" step="0.01" min="0" defaultValue={compra.costo_total ?? ""} />
         <Md3TextField label="Folio / factura (opcional)" name="numero_factura" defaultValue={compra.numero_factura ?? ""} />

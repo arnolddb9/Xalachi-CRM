@@ -160,7 +160,7 @@ function RegistrarPedidoForm({ clientes, onGuardado }: { clientes: Opcion[]; onG
 
   return (
     <form action={formAction} data-testid="form-registrar-pedido" className="space-y-3">
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Md3Select
           label="Cliente"
           name="cliente_id"

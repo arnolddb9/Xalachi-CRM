@@ -111,7 +111,7 @@ export function Md3Textarea({
   }
 
   return (
-    <span style={{ display: "block", width: "100%", ...style }}>
+    <span style={{ display: "block", width: "100%", gridColumn: "1 / -1", ...style }}>
       <md-outlined-text-field
         id={inputId}
         label={label}

@@ -250,7 +250,7 @@ function BeneficiadoForm({ loteServicioId, onGuardado }: { loteServicioId: strin
   return (
     <form action={formAction} data-testid="form-beneficiado-servicio" className="mt-3 space-y-3">
       <input type="hidden" name="lote_servicio_origen_id" value={loteServicioId} />
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <CamposKgYMerma etiquetaKg="Cantidad a avanzar (kg)" />
       </div>
       {state && "error" in state && state.error && (
@@ -276,7 +276,7 @@ function PeladoForm({ loteServicioId, onGuardado }: { loteServicioId: string; on
   return (
     <form action={formAction} data-testid="form-pelado-servicio" className="mt-3 space-y-3">
       <input type="hidden" name="lote_servicio_origen_id" value={loteServicioId} />
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <CamposKgYMerma etiquetaKg="Cantidad a pelar (kg)" />
       </div>
       {state && "error" in state && state.error && (
@@ -310,7 +310,7 @@ function TuesteForm({
   return (
     <form action={formAction} data-testid="form-tueste-servicio" className="mt-3 space-y-3">
       <input type="hidden" name="lote_servicio_origen_id" value={loteServicioId} />
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Md3Select
           label="Perfil de tueste"
           name="perfil_tueste_id"
@@ -343,7 +343,7 @@ function MolidoForm({ loteServicioId, onGuardado }: { loteServicioId: string; on
   return (
     <form action={formAction} data-testid="form-molido-servicio" className="mt-3 space-y-3">
       <input type="hidden" name="lote_servicio_origen_id" value={loteServicioId} />
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <CamposKgYMerma etiquetaKg="Cantidad a moler (kg)" />
       </div>
       {state && "error" in state && state.error && (
@@ -378,7 +378,7 @@ function ClasificacionForm({
     <form action={formAction} data-testid="form-clasificacion-servicio" className="mt-3 space-y-3">
       <input type="hidden" name="lote_servicio_origen_id" value={loteServicioId} />
       <p className="text-sm">Dividir {pesoDisponible} kg en calidades (la suma no puede exceder el peso disponible):</p>
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {(["primera", "segunda", "tercera", "rechazo"] as const).map((calidad) => (
           <Md3TextField key={calidad} label={`${CALIDAD_LABEL[calidad]} (kg)`} name={`${calidad}_kg`} type="number" step="0.01" min="0" />
         ))}
