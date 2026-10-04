@@ -19,6 +19,15 @@ import {
 } from "lucide-react";
 import { useSidebar } from "./sidebar-context";
 
+// Nota: este componente (y MobileHeader) se renderiza en el servidor en
+// cada carga de página, vía AppLayout — a diferencia del resto del sistema,
+// NO puede usar los wrappers de @material/web (Md3Button, Md3IconButton…):
+// esos componentes mutan `customElements` al definirse y solo existen en
+// el navegador (por eso el resto del sistema los carga con
+// `dynamic(..., { ssr: false })`). Usarlos aquí rompería el SSR de toda la
+// app, no solo de esta página. Los colores sí usan los roles de color M3
+// (bg-primary-container, etc. — ver src/app/globals.css) para mantener
+// coherencia visual con el resto del sistema ya migrado.
 const MODULOS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/", label: "Inicio", icon: Home },
   { href: "/catalogos", label: "Catálogos", icon: LayoutGrid },

@@ -3,6 +3,8 @@
 import { Menu } from "lucide-react";
 import { useSidebar } from "./sidebar-context";
 
+// Ver nota en sidebar.tsx: este header se renderiza en el servidor en
+// cada página, así que no puede usar wrappers de @material/web.
 export function MobileHeader() {
   const { abrir } = useSidebar();
 

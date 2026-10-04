@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Md3Button } from "@/components/md3/button";
 
 export default function LogoutButton() {
   const router = useRouter();
@@ -14,11 +15,8 @@ export default function LogoutButton() {
   }
 
   return (
-    <button
-      onClick={handleLogout}
-      className="min-h-11 rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100"
-    >
+    <Md3Button variant="outlined" onClick={handleLogout} minWidth={120}>
       Cerrar sesión
-    </button>
+    </Md3Button>
   );
 }

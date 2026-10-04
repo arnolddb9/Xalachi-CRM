@@ -30,6 +30,10 @@ declare module "react" {
       "md-outlined-text-field": Md3ElementProps;
       "md-divider": Md3ElementProps;
       "md-checkbox": Md3ElementProps;
+      "md-icon-button": Md3ElementProps;
+      "md-filled-icon-button": Md3ElementProps;
+      "md-filled-tonal-icon-button": Md3ElementProps;
+      "md-outlined-icon-button": Md3ElementProps;
     }
   }
 }

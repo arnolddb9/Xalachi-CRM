@@ -15,6 +15,7 @@ export function Md3TextField({
   name,
   id,
   type = "text",
+  autoComplete,
   required,
   min,
   max,
@@ -30,7 +31,8 @@ export function Md3TextField({
   label: string;
   name?: string;
   id?: string;
-  type?: "text" | "number" | "date" | "email" | "tel";
+  type?: "text" | "number" | "date" | "email" | "tel" | "password";
+  autoComplete?: string;
   required?: boolean;
   min?: string | number;
   max?: string | number;
@@ -67,6 +69,7 @@ export function Md3TextField({
         max={max}
         step={step}
         placeholder={placeholder}
+        autocomplete={autoComplete}
         value={isControlled ? value : defaultValue !== undefined ? String(defaultValue) : ""}
         supporting-text={supportingText}
         onInput={(e: FormEvent<HTMLElement>) => sincronizar(e.currentTarget as Md3El)}
