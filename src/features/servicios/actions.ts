@@ -165,6 +165,15 @@ export async function marcarOrdenEntregada(id: string): Promise<ActionState> {
   return { success: true };
 }
 
+export async function marcarOrdenPagada(id: string): Promise<ActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("ordenes_servicio").update({ estado_pago: "pagado" }).eq("id", id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/servicios", "layout");
+  return { success: true };
+}
+
 export async function eliminarOrdenServicio(id: string): Promise<ActionState> {
   const supabase = await createClient();
   const { error } = await supabase.from("ordenes_servicio").delete().eq("id", id);

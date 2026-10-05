@@ -8,7 +8,9 @@ export default async function ServiciosPage() {
     await Promise.all([
       supabase
         .from("ordenes_servicio")
-        .select("id, etapa_entrada, cantidad_kg, estado, fecha_recepcion, fecha_entrega, notas, cliente:clientes(nombre)")
+        .select(
+          "id, etapa_entrada, cantidad_kg, estado, estado_pago, fecha_recepcion, fecha_entrega, notas, cliente:clientes(nombre)",
+        )
         .order("fecha_recepcion", { ascending: false }),
       supabase.from("clientes").select("id, nombre").eq("activo", true).order("nombre"),
       supabase.from("procesos_beneficiado").select("id, nombre").eq("activo", true).order("nombre"),

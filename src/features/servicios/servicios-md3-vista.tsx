@@ -9,7 +9,13 @@ import { Md3Chip } from "@/components/md3/chip";
 import { Md3TextField, Md3Textarea } from "@/components/md3/text-field";
 import { Md3Select } from "@/components/md3/select";
 import { formatoMoneda } from "@/lib/moneda";
-import { registrarOrdenServicio, marcarOrdenEntregada, eliminarOrdenServicio, actualizarTarifasServicio } from "./actions";
+import {
+  registrarOrdenServicio,
+  marcarOrdenEntregada,
+  marcarOrdenPagada,
+  eliminarOrdenServicio,
+  actualizarTarifasServicio,
+} from "./actions";
 
 type Opcion = { id: string; nombre: string };
 
@@ -30,6 +36,7 @@ type Orden = {
   etapa_entrada: string;
   cantidad_kg: number;
   estado: string;
+  estado_pago: string;
   fecha_recepcion: string;
   fecha_entrega: string | null;
   notas: string | null;
@@ -147,7 +154,11 @@ export function ServiciosMd3Vista({
                   <div>
                     <p className="mb-1 text-sm font-medium">
                       {orden.cliente?.nombre ?? "Sin cliente"}{" "}
-                      <Md3Chip testId="badge-estado" label={ESTADO_LABEL[orden.estado] ?? orden.estado} />
+                      <Md3Chip testId="badge-estado" label={ESTADO_LABEL[orden.estado] ?? orden.estado} />{" "}
+                      <Md3Chip
+                        testId="badge-estado-pago"
+                        label={orden.estado_pago === "pagado" ? "Pagado" : "Pendiente de pago"}
+                      />
                     </p>
                     <p className="text-xs" style={{ color: "var(--md-sys-color-on-surface-variant)" }}>
                       {ETAPA_LABEL[orden.etapa_entrada] ?? orden.etapa_entrada}
@@ -165,6 +176,11 @@ export function ServiciosMd3Vista({
                     {puedeEscribir && orden.estado !== "entregado" && (
                       <Md3Button variant="outlined" minWidth={150} onClick={() => marcarOrdenEntregada(orden.id)}>
                         Marcar entregado
+                      </Md3Button>
+                    )}
+                    {puedeEscribir && orden.estado_pago !== "pagado" && (
+                      <Md3Button variant="outlined" minWidth={130} onClick={() => marcarOrdenPagada(orden.id)}>
+                        Marcar pagada
                       </Md3Button>
                     )}
                     {esAdmin && (
