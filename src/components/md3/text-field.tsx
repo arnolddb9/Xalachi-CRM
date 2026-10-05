@@ -50,6 +50,7 @@ export function Md3TextField({
   const isControlled = value !== undefined;
   const [internalValue, setInternalValue] = useState(String(value ?? defaultValue ?? ""));
   const hiddenRef = useRef<HTMLInputElement>(null);
+  const campoRef = useRef<Md3El>(null);
 
   function sincronizar(el: Md3El) {
     const v = el.value ?? "";
@@ -58,9 +59,20 @@ export function Md3TextField({
     onValueChange?.(v);
   }
 
+  // @material/web le pone -webkit-appearance:none al <input type="date">
+  // interno, lo que en Chrome oculta el ícono nativo que abre el
+  // calendario (no pasa en todos los navegadores). Como no hay forma de
+  // restaurarlo vía CSS (el input vive en shadow DOM sin `part` expuesto),
+  // se abre el selector nativo por JS al hacer clic en el campo.
+  function abrirSelectorFecha() {
+    const nativo = campoRef.current?.shadowRoot?.querySelector("input");
+    nativo?.showPicker?.();
+  }
+
   return (
     <span style={{ display: "inline-flex", flexDirection: "column", minWidth, flexShrink: 0, ...style }}>
       <md-outlined-text-field
+        ref={campoRef}
         id={inputId}
         label={label}
         type={type}
@@ -74,6 +86,7 @@ export function Md3TextField({
         supporting-text={supportingText}
         onInput={(e: FormEvent<HTMLElement>) => sincronizar(e.currentTarget as Md3El)}
         onChange={(e: FormEvent<HTMLElement>) => sincronizar(e.currentTarget as Md3El)}
+        onClick={type === "date" ? abrirSelectorFecha : undefined}
       />
       {name && <input ref={hiddenRef} type="hidden" name={name} defaultValue={internalValue} />}
     </span>
