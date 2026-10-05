@@ -34,9 +34,9 @@ export function ReportesMd3Vista({ desde, hasta, ingresos, gastos, resultadoCaja
       <FiltroPeriodo key={`${desde}-${hasta}`} desde={desde} hasta={hasta} />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <TarjetaResumen titulo="Ingresos" monto={ingresos.total} />
-        <TarjetaResumen titulo="Gastos" monto={gastos.total} />
-        <TarjetaResumen titulo="Resultado de caja" monto={resultadoCaja} destacar />
+        <TarjetaResumen testId="tarjeta-ingresos-total" titulo="Ingresos" monto={ingresos.total} />
+        <TarjetaResumen testId="tarjeta-gastos-total" titulo="Gastos" monto={gastos.total} />
+        <TarjetaResumen testId="tarjeta-resultado-caja" titulo="Resultado de caja" monto={resultadoCaja} destacar />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -60,7 +60,9 @@ export function ReportesMd3Vista({ desde, hasta, ingresos, gastos, resultadoCaja
             Sin gastos operativos en el período.
           </p>
         ) : (
-          gastos.operativos.map((g) => <FilaMonto key={g.categoria} etiqueta={g.categoria} monto={g.monto} />)
+          gastos.operativos.map((g) => (
+            <FilaMonto key={g.categoria} testId="fila-gasto-operativo" etiqueta={g.categoria} monto={g.monto} />
+          ))
         )}
       </Md3Card>
 
@@ -86,9 +88,19 @@ export function ReportesMd3Vista({ desde, hasta, ingresos, gastos, resultadoCaja
   );
 }
 
-function TarjetaResumen({ titulo, monto, destacar }: { titulo: string; monto: number; destacar?: boolean }) {
+function TarjetaResumen({
+  titulo,
+  monto,
+  destacar,
+  testId,
+}: {
+  titulo: string;
+  monto: number;
+  destacar?: boolean;
+  testId?: string;
+}) {
   return (
-    <Md3Card style={{ padding: 16 }}>
+    <Md3Card testId={testId} style={{ padding: 16 }}>
       <p className="mb-1 text-xs" style={{ color: "var(--md-sys-color-on-surface-variant)" }}>
         {titulo}
       </p>
@@ -102,9 +114,9 @@ function TarjetaResumen({ titulo, monto, destacar }: { titulo: string; monto: nu
   );
 }
 
-function FilaMonto({ etiqueta, monto }: { etiqueta: string; monto: number }) {
+function FilaMonto({ etiqueta, monto, testId }: { etiqueta: string; monto: number; testId?: string }) {
   return (
-    <div className="flex items-center justify-between py-1 text-sm">
+    <div data-testid={testId} className="flex items-center justify-between py-1 text-sm">
       <span>{etiqueta}</span>
       <span className="font-medium">{formatoMoneda(monto)}</span>
     </div>
