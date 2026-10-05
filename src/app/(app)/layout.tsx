@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { obtenerRolActual } from "@/lib/session";
 import { Sidebar } from "@/components/sidebar";
 import { MobileHeader } from "@/components/mobile-header";
 import { SidebarProvider } from "@/components/sidebar-context";
@@ -17,10 +18,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect("/login");
   }
 
+  const rol = await obtenerRolActual();
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-zinc-50">
-        <Sidebar />
+        <Sidebar esAdmin={rol === "admin"} />
         <div className="flex min-w-0 flex-1 flex-col">
           <MobileHeader />
           <PageTransition>{children}</PageTransition>

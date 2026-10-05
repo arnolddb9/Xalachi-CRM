@@ -14,6 +14,8 @@ import {
   ClipboardList,
   Receipt,
   BarChart3,
+  Users,
+  UserCircle,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -41,10 +43,21 @@ const MODULOS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/reportes", label: "Reportes", icon: BarChart3 },
 ];
 
-function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+const MODULO_USUARIOS = { href: "/usuarios", label: "Usuarios", icon: Users };
+const MODULO_CUENTA = { href: "/cuenta", label: "Mi cuenta", icon: UserCircle };
+
+function NavLinks({
+  pathname,
+  modulos,
+  onNavigate,
+}: {
+  pathname: string;
+  modulos: { href: string; label: string; icon: LucideIcon }[];
+  onNavigate?: () => void;
+}) {
   return (
     <nav className="flex flex-col gap-1 px-3">
-      {MODULOS.map((m) => {
+      {modulos.map((m) => {
         const activo = m.href === "/" ? pathname === "/" : pathname.startsWith(m.href);
         const Icon = m.icon;
         return (
@@ -67,16 +80,17 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ esAdmin = false }: { esAdmin?: boolean }) {
   const pathname = usePathname();
   const { abierto, cerrar } = useSidebar();
+  const modulos = [...MODULOS, ...(esAdmin ? [MODULO_USUARIOS] : []), MODULO_CUENTA];
 
   return (
     <>
       {/* Desktop: rail fijo */}
       <aside className="bg-sidebar hidden w-64 shrink-0 flex-col py-5 md:flex">
         <div className="mb-6 px-4 text-lg font-bold text-white">Xalachi</div>
-        <NavLinks pathname={pathname} />
+        <NavLinks pathname={pathname} modulos={modulos} />
       </aside>
 
       {/* Mobile: drawer animado, controlado desde MobileHeader */}
@@ -107,7 +121,7 @@ export function Sidebar() {
                   <X size={20} />
                 </button>
               </div>
-              <NavLinks pathname={pathname} onNavigate={cerrar} />
+              <NavLinks pathname={pathname} modulos={modulos} onNavigate={cerrar} />
             </motion.aside>
           </>
         )}
