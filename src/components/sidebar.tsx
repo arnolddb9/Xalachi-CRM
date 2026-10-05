@@ -13,6 +13,7 @@ import {
   FileText,
   ClipboardList,
   Receipt,
+  Wallet,
   BarChart3,
   Users,
   UserCircle,
@@ -40,6 +41,7 @@ const MODULOS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/presupuestos", label: "Presupuestos", icon: FileText },
   { href: "/pedidos", label: "Pedidos", icon: ClipboardList },
   { href: "/ventas", label: "Ventas", icon: Receipt },
+  { href: "/gastos", label: "Gastos", icon: Wallet },
   { href: "/reportes", label: "Reportes", icon: BarChart3 },
 ];
 

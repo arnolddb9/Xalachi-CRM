@@ -12,7 +12,13 @@ export type ReportesMd3Props = {
   desde: string;
   hasta: string;
   ingresos: { ventas: number; servicios: number; total: number };
-  gastos: { lote: number; insumo: number; producto_terminado: number; total: number };
+  gastos: {
+    lote: number;
+    insumo: number;
+    producto_terminado: number;
+    operativos: { categoria: string; monto: number }[];
+    total: number;
+  };
   resultadoCaja: number;
   pendientes: {
     ventas: { cantidad: number; monto: number };
@@ -48,6 +54,17 @@ export function ReportesMd3Vista({ desde, hasta, ingresos, gastos, resultadoCaja
       </div>
 
       <Md3Card style={{ padding: 16 }}>
+        <h2 className="mb-2 text-sm font-semibold">Gastos operativos</h2>
+        {gastos.operativos.length === 0 ? (
+          <p className="text-sm" style={{ color: "var(--md-sys-color-on-surface-variant)" }}>
+            Sin gastos operativos en el período.
+          </p>
+        ) : (
+          gastos.operativos.map((g) => <FilaMonto key={g.categoria} etiqueta={g.categoria} monto={g.monto} />)
+        )}
+      </Md3Card>
+
+      <Md3Card style={{ padding: 16 }}>
         <h2 className="mb-2 text-sm font-semibold">Pendientes de cobro</h2>
         <FilaMonto
           etiqueta={`Ventas pendientes (${pendientes.ventas.cantidad})`}
@@ -60,9 +77,10 @@ export function ReportesMd3Vista({ desde, hasta, ingresos, gastos, resultadoCaja
       </Md3Card>
 
       <p className="text-xs" style={{ color: "var(--md-sys-color-on-surface-variant)" }}>
-        Este es un reporte de caja (ingresos vs. gastos del período): el sistema aún no registra el costo
-        unitario de los artículos ni el costo heredado de los lotes, por lo que no es posible calcular una
-        ganancia real por venta o por producto — solo el total de dinero que entró y salió.
+        Este es un reporte de caja (ingresos vs. gastos del período, incluyendo compras y gastos operativos
+        como electricidad, agua o gas): el sistema aún no registra el costo unitario de los artículos ni el
+        costo heredado de los lotes, por lo que no es posible calcular una ganancia real por venta o por
+        producto — solo el total de dinero que entró y salió.
       </p>
     </div>
   );

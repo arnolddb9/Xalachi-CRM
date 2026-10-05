@@ -27,6 +27,7 @@ export default async function ReportesPage({
     { data: ventasPendientes },
     { data: pasosServicio },
     { data: compras },
+    { data: gastosOperativos },
   ] = await Promise.all([
     supabase
       .from("ventas")
@@ -45,6 +46,11 @@ export default async function ReportesPage({
       .select("id, tipo_compra, costo_total, fecha_compra")
       .gte("fecha_compra", desde)
       .lte("fecha_compra", hasta),
+    supabase
+      .from("gastos_operativos")
+      .select("id, monto, fecha, categoria:categorias_gasto(nombre)")
+      .gte("fecha", desde)
+      .lte("fecha", hasta),
   ]);
 
   const sumarVenta = (v: { venta_items: { subtotal: number | null }[] | null }) =>
@@ -71,8 +77,16 @@ export default async function ReportesPage({
       gastosPorTipo[c.tipo_compra as keyof typeof gastosPorTipo] += Number(c.costo_total ?? 0);
     }
   }
-  const totalGastos = gastosPorTipo.lote + gastosPorTipo.insumo + gastosPorTipo.producto_terminado;
+  const totalGastosCompras = gastosPorTipo.lote + gastosPorTipo.insumo + gastosPorTipo.producto_terminado;
 
+  const gastosOperativosPorCategoria = new Map<string, number>();
+  for (const g of gastosOperativos ?? []) {
+    const nombre = g.categoria?.nombre ?? "Sin categoría";
+    gastosOperativosPorCategoria.set(nombre, (gastosOperativosPorCategoria.get(nombre) ?? 0) + Number(g.monto ?? 0));
+  }
+  const totalGastosOperativos = [...gastosOperativosPorCategoria.values()].reduce((acc, v) => acc + v, 0);
+
+  const totalGastos = totalGastosCompras + totalGastosOperativos;
   const totalIngresos = totalVentasPagadas + totalServiciosPagados;
 
   return (
@@ -81,7 +95,11 @@ export default async function ReportesPage({
         desde={desde}
         hasta={hasta}
         ingresos={{ ventas: totalVentasPagadas, servicios: totalServiciosPagados, total: totalIngresos }}
-        gastos={{ ...gastosPorTipo, total: totalGastos }}
+        gastos={{
+          ...gastosPorTipo,
+          operativos: [...gastosOperativosPorCategoria.entries()].map(([categoria, monto]) => ({ categoria, monto })),
+          total: totalGastos,
+        }}
         resultadoCaja={totalIngresos - totalGastos}
         pendientes={{
           ventas: { cantidad: ventasPendientesLista.length, monto: montoVentasPendientes },

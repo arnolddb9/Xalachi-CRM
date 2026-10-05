@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Leaf, Droplets, Flame, Package, Truck, Users, Mountain, Boxes, type LucideIcon } from "lucide-react";
+import { Leaf, Droplets, Flame, Package, Truck, Users, Mountain, Boxes, Receipt, type LucideIcon } from "lucide-react";
 import "@/features/inventario/md3-theme.css";
 import { Md3Card } from "@/components/md3/card";
 
@@ -14,6 +14,7 @@ const CATALOGOS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/catalogos/clientes", label: "Clientes", icon: Users },
   { href: "/catalogos/fincas", label: "Fincas", icon: Mountain },
   { href: "/catalogos/articulos", label: "Insumos y productos", icon: Boxes },
+  { href: "/catalogos/categorias-gasto", label: "Categorías de gasto", icon: Receipt },
 ];
 
 export function CatalogosMd3Vista() {

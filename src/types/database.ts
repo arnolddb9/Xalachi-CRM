@@ -80,6 +80,30 @@ export type Database = {
         }
         Relationships: []
       }
+      categorias_gasto: {
+        Row: {
+          activo: boolean
+          creado_en: string
+          descripcion: string | null
+          id: string
+          nombre: string
+        }
+        Insert: {
+          activo?: boolean
+          creado_en?: string
+          descripcion?: string | null
+          id?: string
+          nombre: string
+        }
+        Update: {
+          activo?: boolean
+          creado_en?: string
+          descripcion?: string | null
+          id?: string
+          nombre?: string
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           activo: boolean
@@ -303,6 +327,54 @@ export type Database = {
           nombre?: string
         }
         Relationships: []
+      }
+      gastos_operativos: {
+        Row: {
+          categoria_id: string
+          creado_en: string
+          creado_por: string | null
+          descripcion: string | null
+          fecha: string
+          id: string
+          monto: number
+          numero_factura: string | null
+        }
+        Insert: {
+          categoria_id: string
+          creado_en?: string
+          creado_por?: string | null
+          descripcion?: string | null
+          fecha?: string
+          id?: string
+          monto: number
+          numero_factura?: string | null
+        }
+        Update: {
+          categoria_id?: string
+          creado_en?: string
+          creado_por?: string | null
+          descripcion?: string | null
+          fecha?: string
+          id?: string
+          monto?: number
+          numero_factura?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gastos_operativos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_gasto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gastos_operativos_creado_por_fkey"
+            columns: ["creado_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lotes: {
         Row: {

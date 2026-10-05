@@ -20,6 +20,7 @@ export const CATALOGOS_GESTIONABLES = [
   "clientes",
   "fincas",
   "articulos",
+  "categorias_gasto",
 ] as const;
 
 export type CatalogoGestionable = (typeof CATALOGOS_GESTIONABLES)[number];
@@ -30,6 +31,11 @@ export const variedadSchema = z.object({
 });
 
 export const procesoBeneficiadoSchema = z.object({
+  nombre: nombreObligatorio,
+  descripcion: descripcionOpcional,
+});
+
+export const categoriaGastoSchema = z.object({
   nombre: nombreObligatorio,
   descripcion: descripcionOpcional,
 });
@@ -117,4 +123,5 @@ export const SCHEMAS_CATALOGOS: Record<CatalogoGestionable, z.ZodTypeAny> = {
   clientes: clienteSchema,
   fincas: fincaSchema,
   articulos: articuloSchema,
+  categorias_gasto: categoriaGastoSchema,
 };
