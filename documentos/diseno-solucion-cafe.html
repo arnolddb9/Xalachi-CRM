@@ -300,6 +300,7 @@
       <li><a href="#observabilidad">Observabilidad</a></li>
       <li><a href="#plan">Plan de implementación</a></li>
       <li><a href="#riesgos">Riesgos y pendientes</a></li>
+      <li><a href="#dependencias">Dependencias y renovación</a></li>
       <li><a href="#glosario">Glosario cafetero</a></li>
     </ol>
   </nav>
@@ -808,8 +809,68 @@ create table empacado_insumos (   -- qué insumos (y cuánto de cada uno) se con
       </div>
     </section>
 
+    <section id="dependencias">
+      <div class="section-head"><span class="num">13</span><h2>Dependencias y plan de renovación</h2></div>
+      <p class="note">Inventario de todo lo que el sistema usa en producción (no solo dependencias de código: también el runtime y la base de datos), con su versión instalada, la más reciente disponible, y cuándo vence el soporte oficial de cada una donde ese soporte tiene fecha fija. Generado el 13-oct-2026 — las versiones "más reciente" se revisaron contra el registro de npm y los anuncios oficiales de cada proyecto en esa fecha; antes de actuar sobre cualquier recomendación, confirmar que sigue vigente.</p>
+
+      <h3>13.1 — Runtime y base de datos</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Componente</th><th>Instalada</th><th>Más reciente</th><th>Soporte / EOL</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>Node.js <span class="pill">runtime (local + Vercel)</span></td><td class="mono">24.16.0</td><td class="mono">24.x</td><td>LTS activo termina <strong>20-oct-2026</strong> (esta semana); soporte de seguridad hasta 30-abr-2028</td><td><span class="pill">Pasa a mantenimiento ya — sigue seguro, no urgente</span></td></tr>
+            <tr><td>PostgreSQL <span class="pill">gestionado por Supabase</span></td><td class="mono">17</td><td class="mono">18.4</td><td>Postgres 17: EOL comunitario ~08-nov-2029 (5 años desde su release)</td><td><span class="pill green">Vigente por años</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">El salto de Node 24 a una versión más nueva no es urgente: termina su fase de soporte "activo" pero sigue recibiendo parches de seguridad casi 2 años más. El de Postgres 17→18 depende de que Supabase habilite la actualización mayor para proyectos existentes — no es una acción que el equipo controle unilateralmente.</p>
+
+      <h3>13.2 — Framework y librerías principales</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Paquete</th><th>Instalada</th><th>Más reciente</th><th>Nota</th></tr></thead>
+          <tbody>
+            <tr><td><code>next</code></td><td class="mono">16.3.5</td><td class="mono">16.4.0</td><td>16.x es la línea "Active LTS" de Next.js (15.x quedó en mantenimiento) — al día, solo falta una actualización menor de rutina.</td></tr>
+            <tr><td><code>react</code> / <code>react-dom</code></td><td class="mono">19.2.8</td><td class="mono">19.3.0</td><td>Al día.</td></tr>
+            <tr><td><code>typescript</code></td><td class="mono">5.9.3</td><td class="mono">7.0.2</td><td><span class="pill">Dos versiones mayores atrás</span> — TypeScript 6.0 fue un release puente y 7.0 es una reescritura completa del compilador en Go (10x+ más rápido). 7.0 <strong>todavía no tiene API programática estable</strong>, así que herramientas como <code>typescript-eslint</code> pueden no ser compatibles todavía. Recomendación: subir primero a 6.x (debería ser un cambio sin fricción) y posponer el salto a 7.x hasta confirmar que el resto de la cadena de herramientas lo soporta.</td></tr>
+            <tr><td><code>eslint</code> + <code>eslint-config-next</code></td><td class="mono">9.39.5</td><td class="mono">10.12.0</td><td>Una versión mayor atrás — revisar el changelog de ESLint 10 (suele traer cambios al formato de configuración) antes de subir.</td></tr>
+            <tr><td><code>tailwindcss</code></td><td class="mono">4.3.3</td><td class="mono">4.3.3</td><td>Al día.</td></tr>
+            <tr><td><code>@material/web</code></td><td class="mono">2.5.0</td><td class="mono">2.5.0</td><td>Al día en versión, pero sigue siendo la biblioteca <strong>oficial de Google con partes marcadas "labs"/experimentales</strong> — el riesgo aquí no es de vencimiento sino de estabilidad de API entre versiones menores. Ya se encontraron y documentaron dos bugs reales de esta librería en esta sesión de trabajo (ver <a class="inline-link" href="#datos">§7</a> y la memoria de feedback de testing).</td></tr>
+            <tr><td><code>@supabase/supabase-js</code></td><td class="mono">2.116.0</td><td class="mono">2.117.3</td><td>Al día.</td></tr>
+            <tr><td><code>@supabase/ssr</code></td><td class="mono">0.12.7</td><td class="mono">0.12.7</td><td>Al día en versión, pero <strong>sigue en 0.x</strong> (pre-1.0) — por convención semver esto significa que Supabase puede introducir cambios de comportamiento en versiones "menores", no solo en mayores. Revisar el changelog en cada actualización, no asumir que es segura solo por no cambiar el primer número.</td></tr>
+            <tr><td><code>zod</code></td><td class="mono">4.6.2</td><td class="mono">4.6.7</td><td>Al día.</td></tr>
+            <tr><td><code>framer-motion</code></td><td class="mono">13.2.0</td><td class="mono">14.2.0</td><td>Una versión mayor atrás — usada solo para las animaciones del sidebar/drawer; bajo riesgo si no se actualiza pronto.</td></tr>
+            <tr><td><code>lucide-react</code></td><td class="mono">1.45.0</td><td class="mono">1.56.0</td><td>Al día (actualizaciones frecuentes, solo iconos — bajo riesgo).</td></tr>
+            <tr><td><code>jspdf</code></td><td class="mono">4.2.1</td><td class="mono">4.2.1</td><td>Al día — usada para generar los PDF de órdenes/presupuestos compartidos.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>13.3 — Herramientas de prueba (no se despliegan a producción)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Paquete</th><th>Instalada</th><th>Más reciente</th></tr></thead>
+          <tbody>
+            <tr><td><code>@playwright/test</code></td><td class="mono">1.63.0</td><td class="mono">1.64.0</td></tr>
+            <tr><td><code>vitest</code></td><td class="mono">5.0.0</td><td class="mono">5.0.4</td></tr>
+            <tr><td><code>@testing-library/react</code></td><td class="mono">16.3.3</td><td class="mono">16.3.3</td></tr>
+            <tr><td><code>jsdom</code></td><td class="mono">30.0.1</td><td class="mono">30.1.2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>13.4 — Prioridad de renovación</h3>
+      <ol class="steps">
+        <li><strong>Ninguna acción urgente.</strong> Nada de lo instalado está fuera de soporte ni tiene una fecha de vencimiento cercana — Node 24 sigue recibiendo seguridad hasta 2028, Postgres 17 hasta 2029.</li>
+        <li><strong>Mantenimiento de rutina (próximo ciclo):</strong> actualizar <code>next</code>, <code>react</code>, <code>@supabase/supabase-js</code>, <code>zod</code>, <code>lucide-react</code>, <code>jspdf</code>, <code>@playwright/test</code> y <code>vitest</code> a sus versiones menores más recientes — son cambios de bajo riesgo.</li>
+        <li><strong>Evaluar con cuidado:</strong> <code>eslint</code> 10.x y <code>framer-motion</code> 14.x (revisar cada changelog antes de subir, son versiones mayores).</li>
+        <li><strong>Posponer deliberadamente:</strong> <code>typescript</code> 7.x, hasta que el ecosistema de plugins confirme soporte — subir primero a 6.x como paso intermedio cuando se decida avanzar.</li>
+        <li><strong>Vigilar, no actuar todavía:</strong> <code>@supabase/ssr</code> (sigue pre-1.0) y <code>@material/web</code> (partes experimentales) — no requieren actualización, pero cualquier bug raro de la UI vale la pena revisarlo contra el changelog de estas dos antes de asumir que es un bug propio.</li>
+      </ol>
+    </section>
+
     <section id="glosario">
-      <div class="section-head"><span class="num">13</span><h2>Glosario cafetero</h2></div>
+      <div class="section-head"><span class="num">14</span><h2>Glosario cafetero</h2></div>
       <dl class="glossary">
         <dt>Cereza</dt><dd>Fruto del café recién cosechado, con pulpa y cáscara.</dd>
         <dt>Beneficiado</dt><dd>Proceso que retira la pulpa de la cereza — lavado, honey o natural, según cuánto mucílago se deja.</dd>
