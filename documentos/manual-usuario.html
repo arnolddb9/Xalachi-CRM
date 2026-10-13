@@ -1,0 +1,536 @@
+<meta charset="utf-8">
+<title>Manual de Usuario — Xalachi</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --ground: #ECE8DF;
+    --surface: #F8F6F0;
+    --surface-raised: #FFFFFF;
+    --ink: #2A241E;
+    --ink-soft: #6B5F53;
+    --ink-faint: #9B8F81;
+    --accent: #A85E23;
+    --accent-deep: #7A4419;
+    --accent-soft: #E8CDA8;
+    --green: #55684A;
+    --green-soft: #DCE3D2;
+    --red: #9A3B2E;
+    --red-soft: #F1DAD4;
+    --line: rgba(42, 36, 30, 0.14);
+    --line-strong: rgba(42, 36, 30, 0.28);
+    --shadow: 0 1px 2px rgba(42,36,30,0.06), 0 6px 20px rgba(42,36,30,0.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #19140F;
+      --surface: #221B14;
+      --surface-raised: #2A2119;
+      --ink: #EDE6DA;
+      --ink-soft: #B7A996;
+      --ink-faint: #83766A;
+      --accent: #D89A56;
+      --accent-deep: #E9B678;
+      --accent-soft: #4A3520;
+      --green: #9CB68A;
+      --green-soft: #2E3826;
+      --red: #E0998C;
+      --red-soft: #3D2420;
+      --line: rgba(237, 230, 218, 0.14);
+      --line-strong: rgba(237, 230, 218, 0.26);
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #19140F;
+    --surface: #221B14;
+    --surface-raised: #2A2119;
+    --ink: #EDE6DA;
+    --ink-soft: #B7A996;
+    --ink-faint: #83766A;
+    --accent: #D89A56;
+    --accent-deep: #E9B678;
+    --accent-soft: #4A3520;
+    --green: #9CB68A;
+    --green-soft: #2E3826;
+    --red: #E0998C;
+    --red-soft: #3D2420;
+    --line: rgba(237, 230, 218, 0.14);
+    --line-strong: rgba(237, 230, 218, 0.26);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: 'Archivo', system-ui, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 0;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  nav.toc {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 2.2rem 1.4rem 2rem 2rem;
+    border-right: 1px solid var(--line);
+  }
+  nav.toc .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+  }
+  nav.toc .brand {
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+    margin-bottom: 1.6rem;
+    color: var(--ink);
+  }
+  nav.toc ol {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    counter-reset: toc;
+  }
+  nav.toc li { counter-increment: toc; }
+  nav.toc a {
+    display: flex;
+    gap: 0.55rem;
+    text-decoration: none;
+    color: var(--ink-soft);
+    font-size: 0.86rem;
+    padding: 0.34rem 0.4rem;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+  nav.toc a:hover { background: var(--surface-raised); color: var(--ink); }
+  nav.toc a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--ink-faint);
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+
+  main { padding: 2.4rem clamp(1.5rem, 4vw, 4rem) 6rem; min-width: 0; }
+
+  .doc-header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--line-strong); }
+  .doc-header .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.9rem;
+  }
+  .doc-header h1 {
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    line-height: 0.98;
+    letter-spacing: 0.005em;
+    margin: 0 0 0.9rem;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+  .doc-header p.lede { font-size: 1.08rem; color: var(--ink-soft); max-width: 62ch; margin: 0 0 1.4rem; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 1.6rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--ink-faint); }
+  .meta-row strong { color: var(--ink-soft); font-weight: 600; }
+
+  section { margin-bottom: 3.4rem; scroll-margin-top: 1.5rem; }
+
+  .section-head { display: flex; align-items: baseline; gap: 0.9rem; margin-bottom: 1.1rem; }
+  .section-head .num {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  h2 {
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 700;
+    font-size: 1.7rem;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    margin: 0;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    font-size: 1.08rem;
+    color: var(--ink);
+    margin: 1.6rem 0 0.7rem;
+  }
+  p { max-width: 68ch; color: var(--ink); }
+  p.note { color: var(--ink-soft); font-size: 0.94rem; max-width: 66ch; }
+  ol.steps, ul.plain { max-width: 68ch; padding-left: 1.3rem; }
+  ol.steps li, ul.plain li { margin-bottom: 0.5rem; }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    padding: 0.9rem 1.1rem;
+    border-radius: 0 6px 6px 0;
+    max-width: 66ch;
+    margin: 1rem 0;
+    font-size: 0.94rem;
+    color: var(--ink-soft);
+  }
+  .callout strong { color: var(--ink); }
+  .callout.decision { border-left-color: var(--green); }
+  .callout.warn { border-left-color: var(--red); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.88rem;
+    box-shadow: var(--shadow);
+  }
+  .table-wrap { overflow-x: auto; margin: 1rem 0 1.4rem; }
+  th, td { text-align: left; padding: 0.6rem 0.85rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: var(--surface);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.mono, th.mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  .pill {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 100px;
+    background: var(--accent-soft);
+    color: var(--accent-deep);
+    white-space: nowrap;
+  }
+  .pill.green { background: var(--green-soft); color: var(--green); }
+  .pill.red { background: var(--red-soft); color: var(--red); }
+
+  figure { margin: 1.2rem 0 1.6rem; max-width: 760px; }
+  figure .shot-frame {
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.6rem;
+    box-shadow: var(--shadow);
+  }
+  figure img { display: block; width: 100%; height: auto; border-radius: 6px; }
+  figcaption { font-size: 0.82rem; color: var(--ink-faint); margin-top: 0.6rem; max-width: 62ch; }
+
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.9em; }
+  :not(pre) > code { background: var(--surface); padding: 0.1rem 0.35rem; border-radius: 4px; color: var(--accent-deep); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0 1.4rem; }
+  @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } .layout { grid-template-columns: 1fr; } nav.toc { display: none; } }
+
+  .stage-flow { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 1rem 0 1.4rem; }
+  .stage {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    color: var(--ink);
+  }
+  .stage-arrow { color: var(--ink-faint); font-size: 0.9rem; }
+
+  footer { border-top: 1px solid var(--line); padding-top: 1.4rem; margin-top: 3rem; font-size: 0.8rem; color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; }
+
+  a.inline-link { color: var(--accent-deep); }
+
+  ::selection { background: var(--accent-soft); color: var(--accent-deep); }
+</style>
+
+<div class="layout">
+  <nav class="toc">
+    <div class="kicker">Manual &nbsp;v1.0</div>
+    <div class="brand">Manual de<br>Usuario</div>
+    <ol>
+      <li><a href="#inicio">Primeros pasos</a></li>
+      <li><a href="#roles">Roles y permisos</a></li>
+      <li><a href="#catalogos">Catálogos</a></li>
+      <li><a href="#receta">Receta de insumos</a></li>
+      <li><a href="#inventario">Inventario y lotes</a></li>
+      <li><a href="#compras">Compras</a></li>
+      <li><a href="#produccion">Producción</a></li>
+      <li><a href="#servicios">Servicios a terceros</a></li>
+      <li><a href="#presupuestos">Presupuestos</a></li>
+      <li><a href="#pedidos-ventas">Pedidos y ventas</a></li>
+      <li><a href="#gastos">Gastos operativos</a></li>
+      <li><a href="#reportes">Reportes</a></li>
+      <li><a href="#usuarios">Administración de usuarios</a></li>
+      <li><a href="#faq">Preguntas frecuentes</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="doc-header">
+      <div class="kicker">Manual de usuario</div>
+      <h1>Cómo usar el sistema de gestión Xalachi</h1>
+      <p class="lede">Guía paso a paso de cada módulo del sistema — inventario, compras, producción, servicios a terceros, pedidos, ventas, gastos y reportes — con capturas reales y qué puede hacer cada rol.</p>
+      <div class="meta-row">
+        <span><strong>Versión</strong> 1.0</span>
+        <span><strong>Fecha</strong> 13 oct 2026</span>
+        <span><strong>Sitio de pruebas</strong> xalachi-dev-crm.vercel.app</span>
+      </div>
+    </header>
+
+    <section id="inicio">
+      <div class="section-head"><span class="num">01</span><h2>Primeros pasos</h2></div>
+      <p>Para entrar al sistema, abre la URL del sitio y usa el correo y contraseña que te haya dado el administrador.</p>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/01-login.jpg" alt="Pantalla de inicio de sesión"></div>
+        <figcaption>Fig. 1 — Pantalla de inicio de sesión.</figcaption>
+      </figure>
+      <p>Una vez dentro, la pantalla de <strong>Inicio</strong> confirma con qué correo entraste y qué rol tienes asignado — es lo primero que debes revisar si algo del menú no se ve como esperas.</p>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/02-inicio.jpg" alt="Pantalla de inicio mostrando sesión activa y rol"></div>
+        <figcaption>Fig. 2 — Inicio: aquí se confirma tu correo y tu rol asignado.</figcaption>
+      </figure>
+      <div class="callout">
+        <strong>¿Olvidaste tu contraseña o quieres cambiarla?</strong> Ve a <strong>Mi cuenta</strong> (al final del menú) — cualquier usuario puede cambiar su propia contraseña ahí, sin depender de un administrador.
+      </div>
+      <p class="note">El menú lateral se ve igual para todos los roles (con una sola excepción: "Usuarios" solo aparece si eres administrador) — lo que cambia entre roles son los botones de crear/editar/eliminar dentro de cada pantalla, no qué módulos ves. Ver <a class="inline-link" href="#roles">§02 Roles y permisos</a>.</p>
+    </section>
+
+    <section id="roles">
+      <div class="section-head"><span class="num">02</span><h2>Roles y permisos</h2></div>
+      <p>Hay tres roles. Un mismo usuario tiene siempre un solo rol, asignado por un administrador desde <a class="inline-link" href="#usuarios">Usuarios</a>.</p>
+      <div class="grid-2">
+        <div class="callout"><strong>Administrador.</strong> Acceso total: compras, catálogos financieros (proveedores, categorías de gasto), gastos operativos, administración de usuarios, y puede eliminar en cualquier módulo.</div>
+        <div class="callout"><strong>Operador de planta.</strong> Enfocado en producción: catálogos de producción, inventario, lotes y procesos (tueste, molido, empacado). No ve botones de Compras, Clientes, Servicios, Pedidos ni Ventas.</div>
+      </div>
+      <div class="callout">
+        <strong>Vendedor.</strong> Enfocado en el lado comercial: clientes, servicios a terceros, presupuestos, pedidos y ventas. No puede crear/editar catálogos de producción ni compras.
+      </div>
+      <p class="note">A nivel de datos, cualquier usuario autenticado puede <em>leer</em> casi toda la información del sistema (es una decisión de diseño: simplifica el sistema y por ahora no hay necesidad real de ocultar datos entre roles internos). Lo que un rol no puede hacer es <em>escribir</em>: el sistema simplemente no le muestra los botones de crear, editar o eliminar en los módulos que no le corresponden.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Módulo</th><th>Administrador</th><th>Operador</th><th>Vendedor</th></tr></thead>
+          <tbody>
+            <tr><td>Catálogos de producción<br><span class="pill">variedades, procesos, tueste, presentaciones, fincas, artículos</span></td><td><span class="pill green">Lectura y escritura</span></td><td><span class="pill green">Lectura y escritura</span></td><td><span class="pill">Solo lectura</span></td></tr>
+            <tr><td>Catálogos financieros<br><span class="pill">proveedores, categorías de gasto</span></td><td><span class="pill green">Lectura y escritura</span></td><td><span class="pill">Solo lectura</span></td><td><span class="pill">Solo lectura</span></td></tr>
+            <tr><td>Clientes</td><td><span class="pill green">Lectura y escritura</span></td><td><span class="pill">Solo lectura</span></td><td><span class="pill green">Lectura y escritura</span></td></tr>
+            <tr><td>Inventario y Producción</td><td><span class="pill green">Lectura y escritura</span></td><td><span class="pill green">Lectura y escritura</span></td><td><span class="pill">Solo lectura</span></td></tr>
+            <tr><td>Compras</td><td><span class="pill green">Lectura y escritura</span></td><td><span class="pill">Solo lectura</span></td><td><span class="pill">Solo lectura</span></td></tr>
+            <tr><td>Servicios, Presupuestos, Pedidos, Ventas</td><td><span class="pill green">Lectura y escritura</span></td><td><span class="pill">Solo lectura</span></td><td><span class="pill green">Lectura y escritura</span></td></tr>
+            <tr><td>Gastos operativos</td><td><span class="pill green">Lectura y escritura</span></td><td><span class="pill">Solo lectura</span></td><td><span class="pill">Solo lectura</span></td></tr>
+            <tr><td>Reportes</td><td colspan="3"><span class="pill">Solo lectura para todos — nadie escribe aquí, es un panel informativo</span></td></tr>
+            <tr><td>Usuarios (administración)</td><td><span class="pill green">Lectura y escritura</span></td><td><span class="pill red">Sin acceso</span></td><td><span class="pill red">Sin acceso</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Reglas especiales a tener en cuenta</h3>
+      <ul class="plain">
+        <li>Un administrador <strong>no puede suspender su propia cuenta</strong> (para evitar quedarse fuera del sistema por accidente).</li>
+        <li>Un <strong>Pedido</strong> o <strong>Presupuesto</strong> solo se puede editar mientras está en estado "Borrador" — en cuanto se confirma/aprueba, queda fijo (ver <a class="inline-link" href="#pedidos-ventas">§09</a> y <a class="inline-link" href="#presupuestos">§08</a>).</li>
+        <li>Eliminar (no solo editar) está casi siempre restringido a administrador, aunque crear/editar sea compartido con operador o vendedor.</li>
+      </ul>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/16-compras-operador.jpg" alt="Pantalla de Compras vista por un operador, sin boton Registrar compra"></div>
+        <figcaption>Fig. 3 — Compras visto por un Operador: la lista es la misma, pero no aparece el botón "Registrar compra".</figcaption>
+      </figure>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/17-usuarios-bloqueado.jpg" alt="Un operador es redirigido a Inicio al intentar entrar a Usuarios"></div>
+        <figcaption>Fig. 4 — Si un Operador o Vendedor intenta entrar a <code>/usuarios</code> directamente, el sistema lo regresa a Inicio.</figcaption>
+      </figure>
+    </section>
+
+    <section id="catalogos">
+      <div class="section-head"><span class="num">03</span><h2>Catálogos</h2></div>
+      <p>Los catálogos son las listas base que usa todo el sistema: variedades de café, procesos de beneficiado, perfiles de tueste, presentaciones de empaque, proveedores, clientes, fincas, artículos (insumos y productos) y categorías de gasto.</p>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/03-catalogos.jpg" alt="Pantalla hub de Catalogos con las 9 categorias"></div>
+        <figcaption>Fig. 5 — Hub de Catálogos. "Insumos y productos" es el mismo catálogo que en otras partes del sistema se llama "Artículos".</figcaption>
+      </figure>
+      <p>Para crear un registro en cualquier catálogo: entra a la categoría, pulsa <strong>Nuevo</strong>, llena el formulario y guarda. Para dejar de usar uno sin perder su historial, usa <strong>Desactivar</strong> en vez de <strong>Eliminar</strong> — un registro desactivado deja de aparecer como opción en los formularios nuevos, pero no borra nada de lo que ya lo usó.</p>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/04-articulos.jpg" alt="Catalogo de articulos mostrando insumos y productos terminados"></div>
+        <figcaption>Fig. 6 — Catálogo de Artículos: cada uno es "Insumo" (se consume, ej. bolsas) o "Producto terminado" (se vende). Los productos terminados tienen un botón extra, "Ver receta".</figcaption>
+      </figure>
+    </section>
+
+    <section id="receta">
+      <div class="section-head"><span class="num">04</span><h2>Receta de insumos de un producto</h2></div>
+      <p>Cada producto terminado (ej. "Café Molido Premium 500g") puede necesitar varios insumos para empacarse — una bolsa, una etiqueta, un sticker — cada uno en una cantidad distinta. Esa relación se configura <strong>una sola vez por producto</strong>, en su catálogo, y después el sistema la aplica solo cada vez que se empaca.</p>
+      <ol class="steps">
+        <li>Entra a <strong>Catálogos → Insumos y productos</strong>.</li>
+        <li>En la fila del producto terminado, pulsa <strong>Ver receta</strong>.</li>
+        <li>Pulsa <strong>Agregar insumo</strong>, elige el insumo y cuántas unidades de ese insumo se gastan <em>por cada unidad</em> del producto.</li>
+        <li>Repite para cada insumo que necesite ese producto.</li>
+      </ol>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/05-receta-insumos.jpg" alt="Pantalla de receta de insumos de un producto mostrando un insumo configurado"></div>
+        <figcaption>Fig. 7 — Receta de "Café en Grano Reventa 1kg": 1 unidad de "Bolsas de empaque 500g" por cada unidad empacada.</figcaption>
+      </figure>
+      <div class="callout decision">
+        <strong>Por qué importa:</strong> antes, al empacar había que elegir a mano un solo insumo opcional. Ahora, con la receta configurada, el sistema descuenta automáticamente <em>todos</em> los insumos correctos — y si a algún insumo le falta existencia, bloquea el empacado completo en vez de dejarlo a medias. Ver el flujo completo en <a class="inline-link" href="#produccion">§06 Producción</a>.
+      </div>
+      <p class="note">Si un producto no tiene receta configurada, se puede seguir empacando igual — simplemente no se descuenta ningún insumo automáticamente.</p>
+    </section>
+
+    <section id="inventario">
+      <div class="section-head"><span class="num">05</span><h2>Inventario y lotes</h2></div>
+      <p>Aquí se ve y se gestiona todo el café propio, desde que se recibe en cereza hasta que queda listo para vender. Un lote avanza por etapas: <strong>cereza → (pasos de beneficiado) → pergamino → verde → tostado → molido</strong>, y cada paso queda registrado con su merma.</p>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/06-inventario.jpg" alt="Pantalla de Inventario con filtros, resumen por etapa y lotes activos"></div>
+        <figcaption>Fig. 8 — Inventario: filtros arriba, resumen de kilos por etapa, y la lista de lotes activos abajo con el botón correspondiente a su etapa actual (Tostar, Moler, Empacar, etc.).</figcaption>
+      </figure>
+      <ul class="plain">
+        <li><strong>Registrar lote</strong> crea un lote nuevo directo en la etapa que indiques (cereza, pergamino o verde) — úsalo si el café ya está en planta y no viene de una compra registrada en el sistema.</li>
+        <li>Cada lote tiene un botón que cambia según su etapa: pasar a la siguiente etapa de beneficiado, Trillar, Tostar, Moler o Empacar.</li>
+        <li><strong>Clasificar calidad</strong> (solo en verde) divide un lote en primera/segunda/tercera/rechazo.</li>
+        <li><strong>Ver historial</strong> muestra todas las transformaciones de ese lote, de principio a fin — y desde ahí un administrador puede eliminar un empacado puntual si se registró mal (revierte el peso y el stock automáticamente).</li>
+      </ul>
+      <p>Las pestañas <strong>Insumos</strong> y <strong>Productos</strong> (arriba de la lista de lotes) muestran las existencias de artículos — ahí se ajusta el stock manualmente cuando hace falta (ej. un conteo físico) y se fija el precio de venta de cada producto terminado.</p>
+    </section>
+
+    <section id="compras">
+      <div class="section-head"><span class="num">06</span><h2>Compras</h2></div>
+      <p>Una compra puede ser de tres tipos, y el formulario cambia según cuál elijas:</p>
+      <ul class="plain">
+        <li><strong>Lote de café</strong> (cereza, pergamino o verde) — registrarla crea automáticamente un lote nuevo en Inventario.</li>
+        <li><strong>Insumo</strong> (bolsas, etiquetas) — suma existencia directa al artículo, sin crear ningún lote.</li>
+        <li><strong>Producto terminado</strong> — para cuando compras café ya empacado de otro productor para revender, no es tuyo recién tostado.</li>
+      </ul>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/07-compras.jpg" alt="Lista de compras registradas de los tres tipos"></div>
+        <figcaption>Fig. 9 — Compras: cada fila muestra su tipo (Insumo, Cereza, Producto terminado, etc.) y, si generó un lote, un link directo "Ver lote".</figcaption>
+      </figure>
+      <div class="callout warn"><strong>Solo un administrador</strong> puede registrar, editar o eliminar compras — es el único catálogo de producción donde ni operador ni vendedor tienen ningún botón de escritura.</div>
+    </section>
+
+    <section id="produccion">
+      <div class="section-head"><span class="num">07</span><h2>Producción</h2></div>
+      <p>Esta pantalla es una <strong>bitácora de solo lectura</strong>: muestra, en orden, cada transformación aplicada a cualquier lote (beneficiado, trillado, tueste, molido, empacado), quién la hizo y cuándo. Las acciones en sí (tostar, moler, empacar) se hacen desde <a class="inline-link" href="#inventario">Inventario</a>, sobre cada lote.</p>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/08-produccion.jpg" alt="Bitacora de produccion mostrando beneficiado, trillado, tueste, molido y empacado de un lote"></div>
+        <figcaption>Fig. 10 — Producción: historial completo de un lote, del beneficiado al empacado, con el responsable y la hora de cada paso.</figcaption>
+      </figure>
+      <p>Al <strong>empacar</strong> un lote tostado o molido, el formulario pide producto, presentación y unidades — y muestra en vivo qué insumos va a descontar según la receta del producto (ver <a class="inline-link" href="#receta">§04</a>) antes de confirmar.</p>
+    </section>
+
+    <section id="servicios">
+      <div class="section-head"><span class="num">08</span><h2>Servicios a terceros</h2></div>
+      <p>Para cuando un cliente trae su propio café (no comprado por el negocio) y solo se le cobra por el servicio de procesarlo — beneficiado, pelado, clasificación, tueste o molido. <strong>Ese café nunca entra al inventario propio.</strong></p>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/09-servicios.jpg" alt="Pantalla de Servicios a terceros con tarifas y ordenes de servicio"></div>
+        <figcaption>Fig. 11 — Servicios a terceros: tarifa por kg de cada tipo de proceso (ajustable), y la lista de órdenes activas.</figcaption>
+      </figure>
+      <ol class="steps">
+        <li>Pulsa <strong>Registrar servicio</strong>, elige el cliente y la etapa en la que llega su café.</li>
+        <li>Desde el detalle de la orden, aplica cada proceso que el cliente pidió — cada uno cobra según la tarifa vigente por kg.</li>
+        <li>Cuando el cliente recoge su café, márcalo como entregado.</li>
+      </ol>
+      <p class="note">El cobro por estos servicios se refleja como ingreso en <a class="inline-link" href="#reportes">Reportes</a>, igual que una venta — pero el café en sí no mueve el stock de inventario propio.</p>
+    </section>
+
+    <section id="presupuestos">
+      <div class="section-head"><span class="num">09</span><h2>Presupuestos de servicio</h2></div>
+      <p>Un presupuesto es una cotización previa a una orden de servicio real — útil cuando el cliente quiere saber el costo antes de comprometerse.</p>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/10-presupuestos.jpg" alt="Lista de presupuestos de servicio con estados Rechazado y Aprobado"></div>
+        <figcaption>Fig. 12 — Presupuestos: uno rechazado y uno aprobado. Al aprobar, el sistema genera automáticamente la orden de servicio real (botón "Ver orden").</figcaption>
+      </figure>
+      <p>Mientras un presupuesto está en <strong>Borrador</strong> se pueden agregar o quitar procesos estimados libremente. En cuanto se <strong>Aprueba</strong> o se <strong>Rechaza</strong>, queda fijo — ya no se puede editar.</p>
+    </section>
+
+    <section id="pedidos-ventas">
+      <div class="section-head"><span class="num">10</span><h2>Pedidos y ventas</h2></div>
+      <p>Un <strong>Pedido</strong> es lo que un cliente quiere comprar (café en grano a granel de un lote propio, o unidades de un artículo); al confirmarlo se convierte en una <strong>Venta</strong>, que es la que realmente descuenta el inventario y registra el cobro.</p>
+      <div class="grid-2">
+        <figure>
+          <div class="shot-frame"><img src="manual-assets/11-pedidos.jpg" alt="Lista de pedidos confirmados con link a su venta"></div>
+          <figcaption>Fig. 13 — Pedidos confirmados, cada uno con link directo a la venta que generó.</figcaption>
+        </figure>
+        <figure>
+          <div class="shot-frame"><img src="manual-assets/12-ventas.jpg" alt="Lista de ventas con estado Pagado"></div>
+          <figcaption>Fig. 14 — Ventas: estado de pago de cada una.</figcaption>
+        </figure>
+      </div>
+      <p class="note">Igual que los presupuestos, un pedido solo se puede editar mientras está en <strong>Borrador</strong>. Eliminar una venta revierte el inventario automáticamente (vuelve a sumar lo que se había descontado).</p>
+    </section>
+
+    <section id="gastos">
+      <div class="section-head"><span class="num">11</span><h2>Gastos operativos</h2></div>
+      <p>Registra gastos del negocio que no son compras de café ni de insumos de producción — electricidad, agua, gas, alquiler. Solo un administrador puede registrarlos, y alimentan directamente el total de "Gastos" en Reportes.</p>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/13-gastos.jpg" alt="Pantalla de gastos operativos con un gasto de electricidad registrado"></div>
+        <figcaption>Fig. 15 — Gastos operativos: categoría, descripción, monto y fecha.</figcaption>
+      </figure>
+    </section>
+
+    <section id="reportes">
+      <div class="section-head"><span class="num">12</span><h2>Reportes</h2></div>
+      <p>Un reporte de <strong>caja</strong> por período: cuánto entró (ventas pagadas + servicios pagados), cuánto salió (compras + gastos operativos), y el resultado neto. También muestra lo pendiente de cobro.</p>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/14-reportes.jpg" alt="Pantalla de reportes con ingresos, gastos, resultado de caja y desgloses"></div>
+        <figcaption>Fig. 16 — Reportes: filtra por rango de fechas (o usa "Mes en curso") para ver ingresos, gastos y pendientes de cobro de ese período.</figcaption>
+      </figure>
+      <div class="callout">
+        <strong>Importante:</strong> este reporte es de <em>caja</em> (cuánto dinero entró y salió), no de <em>margen</em>. El sistema no calcula la ganancia real de un producto ni de una venta específica, porque no registra el costo unitario de los artículos — es una limitación conocida y aceptada, no un error.
+      </div>
+    </section>
+
+    <section id="usuarios">
+      <div class="section-head"><span class="num">13</span><h2>Administración de usuarios</h2></div>
+      <p class="note">Esta sección solo es visible y accesible para administradores.</p>
+      <figure>
+        <div class="shot-frame"><img src="manual-assets/15-usuarios.jpg" alt="Lista de usuarios del sistema con su rol y boton de suspender"></div>
+        <figcaption>Fig. 17 — Usuarios: lista completa con su rol (editable ahí mismo) y la opción de suspender/reactivar el acceso.</figcaption>
+      </figure>
+      <ul class="plain">
+        <li><strong>Crear usuario</strong> da de alta una cuenta nueva con correo, contraseña inicial y rol.</li>
+        <li>El selector de <strong>Rol</strong> junto a cada usuario cambia su rol al instante.</li>
+        <li><strong>Suspender</strong> bloquea el acceso de ese usuario sin borrar su cuenta ni su historial — <strong>Reactivar</strong> lo revierte. No puedes suspender tu propia cuenta.</li>
+      </ul>
+    </section>
+
+    <section id="faq">
+      <div class="section-head"><span class="num">14</span><h2>Preguntas frecuentes</h2></div>
+      <h3>No veo el botón para crear/editar algo que debería poder hacer</h3>
+      <p class="note">Revisa tu rol en <strong>Inicio</strong> (§01). Si el módulo es de los que tu rol solo puede leer (ver tabla en §02), eso es esperado — pide a un administrador que lo registre, o que te cambie el rol si corresponde.</p>
+      <h3>Empaqué un producto y me dice que falta un insumo</h3>
+      <p class="note">Revisa la receta de ese producto (§04) y la existencia real de cada insumo en Inventario → pestaña Insumos. El sistema no deja empacar si falta cualquiera de los insumos de la receta — es intencional, para que el stock de insumos nunca quede negativo.</p>
+      <h3>Edité un pedido/presupuesto y no me deja</h3>
+      <p class="note">Solo se puede editar mientras está en estado "Borrador". Si ya se aprobó/confirmó, hay que trabajar sobre la venta u orden de servicio que generó, no sobre el pedido/presupuesto original.</p>
+      <h3>¿Dónde cambio mi contraseña?</h3>
+      <p class="note">En <strong>Mi cuenta</strong>, al final del menú lateral — disponible para cualquier usuario, sin importar el rol.</p>
+    </section>
+
+    <footer>Manual vivo — actualizar tras cada cambio visible para el usuario final. Capturas tomadas del sitio de pruebas el 13-oct-2026.</footer>
+  </main>
+</div>
