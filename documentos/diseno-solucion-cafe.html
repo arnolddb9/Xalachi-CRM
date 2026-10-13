@@ -310,10 +310,10 @@
       <h1>Sistema de gestión para tueste, procesado y venta de café</h1>
       <p class="lede">Cubre inventario multietapa, compras, producción (beneficiado, trillado, tueste, molido), servicios a terceros, clientes, pedidos y ventas — desde el grano cereza hasta la taza empacada con marca propia.</p>
       <div class="meta-row">
-        <span><strong>Versión</strong> 1.0</span>
-        <span><strong>Fecha</strong> 31 ago 2026</span>
+        <span><strong>Versión</strong> 2.0</span>
+        <span><strong>Fecha</strong> 13 oct 2026</span>
         <span><strong>Stack</strong> Next.js · Supabase · Vercel</span>
-        <span><strong>Estado</strong> En diseño</span>
+        <span><strong>Estado</strong> Implementado — sitio de pruebas publicado</span>
       </div>
     </header>
 
@@ -329,7 +329,7 @@
 
     <section id="alcance">
       <div class="section-head"><span class="num">02</span><h2>Alcance por módulos</h2></div>
-      <p class="note">El desarrollo se organiza en módulos incrementales; cada uno entrega un flujo usable antes de iniciar el siguiente. Detalle de secuencia y dependencias en <a class="inline-link" href="#plan">§11 Plan de implementación</a>.</p>
+      <p class="note">El desarrollo se organizó en módulos incrementales; cada uno entregó un flujo usable antes de iniciar el siguiente. Detalle de secuencia y dependencias en <a class="inline-link" href="#plan">§11 Plan de implementación</a>. <strong>Todos los módulos de la fila de abajo están implementados y en uso</strong> — ver estado real por módulo en esa sección.</p>
       <div class="stage-flow">
         <span class="stage">M0 · Fundamentos</span><span class="stage-arrow">→</span>
         <span class="stage">M1 · Catálogos</span><span class="stage-arrow">→</span>
@@ -338,8 +338,11 @@
         <span class="stage">M4 · Producción</span><span class="stage-arrow">→</span>
         <span class="stage">M5 · Servicios</span><span class="stage-arrow">→</span>
         <span class="stage">M6 · Pedidos/Ventas</span><span class="stage-arrow">→</span>
-        <span class="stage">M7 · Reportes</span>
+        <span class="stage">M7 · Reportes</span><span class="stage-arrow">→</span>
+        <span class="stage">Usuarios</span><span class="stage-arrow">→</span>
+        <span class="stage">Gastos operativos</span>
       </div>
+      <p class="note">Además, cada producto terminado puede tener una <strong>receta de insumos</strong> configurada (bolsa, etiqueta, sticker, etc., con cantidad por unidad) — al empacar, el sistema descuenta automáticamente todos los insumos de la receta en vez de pedir que se elijan a mano. Ver <a class="inline-link" href="#datos">§7.3</a>.</p>
     </section>
 
     <section id="flujos">
@@ -416,7 +419,7 @@ flowchart LR
             <tr><td>Escalabilidad</td><td>Horizontal</td><td>Sin degradación</td><td><span class="pill">Parcial — API escala, BD es instancia única</span></td></tr>
             <tr><td>Mantenibilidad</td><td>Testabilidad</td><td>Unit/integración/e2e</td><td><span class="pill green">Cumple</span></td></tr>
             <tr><td>Mantenibilidad</td><td>Zero-downtime deploy</td><td>Sin caída</td><td><span class="pill green">Cumple — Vercel</span></td></tr>
-            <tr><td>Observabilidad</td><td>Métricas / alertas</td><td>Telemetría + alertas</td><td><span class="pill green">Cumple — Sentry + Better Stack (§10)</span></td></tr>
+            <tr><td>Observabilidad</td><td>Métricas / alertas</td><td>Telemetría + alertas</td><td><span class="pill">Pendiente — Sentry/Better Stack no integrados todavía (§10)</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -501,35 +504,56 @@ flowchart TB
 
     <section id="datos">
       <div class="section-head"><span class="num">07</span><h2>Diseño de base de datos</h2></div>
+      <p class="note"><strong>El esquema real difiere bastante del diseño original de este documento</strong> (ver versión anterior en el historial) — evolucionó durante la construcción conforme aparecieron reglas de negocio no anticipadas, sobre todo que no todo lo que se compra/vende es café propio (insumos de empaque, reventa de producto terminado). Lo que sigue es un reflejo fiel del esquema en <code>supabase/migrations/</code> a la fecha de este documento, no una propuesta.</p>
       <figure>
         <div class="diagram-frame">
 <pre class="mermaid">
 erDiagram
-    PROVEEDORES ||--o{ COMPRAS : "vende a"
-    COMPRAS ||--|| LOTES : "genera"
+    PROVEEDORES ||--o{ LOTES : "origina"
     VARIEDADES ||--o{ LOTES : "clasifica"
-    LOTES ||--o{ ORDENES_PROCESO : "entra/sale de"
-    PROCESOS_BENEFICIADO ||--o{ ORDENES_PROCESO : "aplica"
-    PERFILES_TUESTE ||--o{ ORDENES_PROCESO : "aplica"
-    CLIENTES ||--o{ ORDENES_SERVICIO : "solicita"
+    FINCAS ||--o{ LOTES : "procede de (opcional)"
+    PROCESOS_BENEFICIADO ||--o{ LOTES : "define flujo de pasos"
+    PROCESOS_BENEFICIADO ||--o{ PASOS_BENEFICIADO : "secuencia configurable"
+    PERFILES_TUESTE ||--o{ LOTES : "aplica al tostar"
+    LOTES ||--o{ ORDENES_PROCESO : "cada transición"
+    PROVEEDORES ||--o{ COMPRAS : "vende a"
+    COMPRAS }o--o| LOTES : "genera (tipo_compra=lote)"
+    COMPRAS }o--o| ARTICULOS : "suma stock (tipo_compra=insumo/producto)"
+    ARTICULOS ||--o{ ARTICULO_INSUMOS : "receta del producto"
+    ARTICULOS ||--o{ ARTICULO_INSUMOS : "es insumo requerido en"
+    LOTES ||--o{ EMPACADOS : "empaca (parcial)"
+    ARTICULOS ||--o{ EMPACADOS : "producto_terminado generado"
+    PRESENTACIONES ||--o{ EMPACADOS : "define peso por unidad"
+    EMPACADOS ||--o{ EMPACADO_INSUMOS : "consume insumos de la receta"
+    CLIENTES ||--o{ ORDENES_SERVICIO : "trae su café (no propio)"
+    ORDENES_SERVICIO ||--o{ LOTES_SERVICIO : "etapas del lote del cliente"
+    LOTES_SERVICIO ||--o{ PASOS_SERVICIO : "procesos cobrados"
+    CLIENTES ||--o{ PRESUPUESTOS_SERVICIO : "cotiza antes de aprobar"
+    PRESUPUESTOS_SERVICIO ||--o{ PRESUPUESTO_ITEMS : "detalla procesos estimados"
+    PRESUPUESTOS_SERVICIO |o--o| ORDENES_SERVICIO : "al aprobar, genera"
     CLIENTES ||--o{ PEDIDOS : "realiza"
-    LOTES |o--o{ PRODUCTOS_TERMINADOS : "empaca en (opcional)"
-    PROVEEDORES |o--o{ PRODUCTOS_TERMINADOS : "reventa, si aplica"
-    PRESENTACIONES ||--o{ PRODUCTOS_TERMINADOS : "define"
-    PEDIDOS ||--o{ VENTAS : "concreta"
-    PRODUCTOS_TERMINADOS ||--o{ VENTAS : "vende"
-    PRODUCTOS_TERMINADOS ||--o{ MOVIMIENTOS_INVENTARIO : "registra movimiento"
-    LOTES |o--o{ MOVIMIENTOS_INVENTARIO : "trazabilidad de origen (opcional)"
+    PEDIDOS ||--o{ PEDIDO_ITEMS : "detalla (lote propio o artículo)"
+    PEDIDOS |o--o| VENTAS : "al confirmar, se concreta en"
+    VENTAS ||--o{ VENTA_ITEMS : "detalla y descuenta inventario"
     USUARIOS ||--o{ ORDENES_PROCESO : "registra"
+    USUARIOS ||--o{ COMPRAS : "registra"
     USUARIOS ||--o{ VENTAS : "atiende"
+    USUARIOS ||--o{ GASTOS_OPERATIVOS : "registra"
+    CATEGORIAS_GASTO ||--o{ GASTOS_OPERATIVOS : "clasifica"
 
     LOTES {
         uuid id PK
         uuid variedad_id FK
         uuid proveedor_id FK
-        text etapa
+        uuid finca_id FK "opcional"
+        uuid proceso_beneficiado_id FK "opcional"
+        uuid perfil_tueste_id FK "opcional, tras tueste"
+        text etapa "cereza..pergamino..verde..tostado..molido, o paso configurado"
+        text calidad "primera|segunda|tercera|rechazo, opcional"
+        numeric peso_inicial_kg
         numeric peso_actual_kg
-        date fecha_cosecha
+        numeric cantidad_cajuelas "solo en cereza"
+        text nombre "opcional, se conserva en toda transformación"
     }
     ORDENES_PROCESO {
         uuid id PK
@@ -539,13 +563,45 @@ erDiagram
         numeric merma_pct
         uuid usuario_id FK
     }
+    ARTICULOS {
+        uuid id PK
+        text tipo "insumo | producto_terminado"
+        text nombre
+        text unidad_medida
+        numeric stock_actual "mantenido directo por las funciones, no por un ledger"
+        numeric precio_venta
+    }
+    ARTICULO_INSUMOS {
+        uuid id PK
+        uuid articulo_id FK "producto_terminado"
+        uuid insumo_articulo_id FK "insumo"
+        numeric cantidad_por_unidad
+    }
+    EMPACADOS {
+        uuid id PK
+        uuid lote_origen_id FK
+        uuid articulo_id FK
+        uuid presentacion_id FK
+        numeric unidades
+        numeric peso_kg
+        uuid usuario_id FK
+    }
+    COMPRAS {
+        uuid id PK
+        text tipo_compra "lote | insumo | producto_terminado"
+        uuid proveedor_id FK
+        uuid lote_id FK "si tipo_compra=lote"
+        uuid articulo_id FK "si tipo_compra=insumo/producto_terminado"
+        numeric costo_total
+        uuid creado_por FK
+    }
     ORDENES_SERVICIO {
         uuid id PK
         uuid cliente_id FK
-        text tipo_servicio
+        text etapa_entrada
         numeric cantidad_kg
-        numeric tarifa
         text estado
+        text estado_pago
     }
     AUDIT_LOG {
         bigint id PK
@@ -556,19 +612,9 @@ erDiagram
         uuid changed_by FK
         timestamptz changed_at
     }
-    MOVIMIENTOS_INVENTARIO {
-        bigint id PK
-        uuid producto_terminado_id FK
-        uuid lote_origen_id FK
-        text tipo_movimiento
-        int cantidad
-        uuid referencia_id
-        uuid usuario_id FK
-        timestamptz creado_en
-    }
 </pre>
         </div>
-        <figcaption>Fig. 5 — <code>LOTES</code> es la entidad central: toda transformación (compra, beneficiado, trillado, tueste, molido, empacado) pasa por <code>ORDENES_PROCESO</code>, dejando trazabilidad completa desde la cereza hasta la venta.</figcaption>
+        <figcaption>Fig. 5 — <code>LOTES</code> sigue siendo la entidad central de la producción propia: toda transformación (compra, beneficiado, trillado, tueste, molido, empacado) pasa por <code>ORDENES_PROCESO</code>, dejando trazabilidad completa desde la cereza hasta la venta. El servicio a terceros replica ese mismo patrón en paralelo con <code>LOTES_SERVICIO</code>/<code>PASOS_SERVICIO</code>, sin tocar nunca el inventario propio.</figcaption>
       </figure>
 
       <h3>7.1 — Tabla de auditoría (append-only, con retención)</h3>
@@ -598,45 +644,61 @@ select cron.schedule('purge-audit-log', '0 3 * * *', $$select fn_purge_audit_log
 </pre>
       <p class="note">15 días es el punto de partida — súbelo si te interesa poder investigar un ajuste de inventario raro varias semanas después; a esta escala de datos, 90 días no representa un costo de almacenamiento relevante.</p>
 
-      <h3>7.2 — Inventario de producto terminado</h3>
-      <p class="note"><code>LOTES</code> cubre el inventario en proceso (verde, tostado a granel, medido en kg). El producto empacado listo para vender se mide en <strong>unidades</strong> (bolsas de 250g/500g/1kg) y necesita su propio registro — como ledger, igual que <code>ORDENES_PROCESO</code>, para que el stock nunca se desincronice de su historial.</p>
-      <p class="note">No todo producto viene de tu propio proceso: también puedes comprar café ya listo para reventa. Por eso <code>productos_terminados</code> no depende obligatoriamente de un lote propio, y el ledger admite una entrada por compra directa además del ajuste manual.</p>
-<pre class="codeblock">alter table productos_terminados
-  alter column variedad_id drop not null,        -- opcional: reventa puede no tener variedad definida
-  alter column perfil_tueste_id drop not null,   -- opcional: reventa no pasó por tu tueste
-  add column origen text not null default 'produccion_propia'
-    check (origen in ('produccion_propia','reventa')),
-  add column proveedor_id uuid references proveedores(id);  -- de quién lo compraste, si es reventa
-
-create table movimientos_inventario (
-  id bigint generated always as identity primary key,
-  producto_terminado_id uuid not null references productos_terminados(id),
-  lote_origen_id uuid references lotes(id),        -- trazabilidad: de qué lote salió (null si es reventa)
-  tipo_movimiento text not null
-    check (tipo_movimiento in ('entrada_empacado','entrada_compra','salida_venta','ajuste')),
-  cantidad int not null,                            -- positivo en entrada, negativo en salida
-  referencia_id uuid,                               -- id de la venta, compra u orden de proceso que originó el movimiento
-  usuario_id uuid references auth.users(id),
-  creado_en timestamptz not null default now()
+      <h3>7.2 — Inventario de insumos y productos terminados (implementación real)</h3>
+      <p class="note">La versión anterior de este documento proponía un <code>producto_terminado</code> separado con un ledger de <code>movimientos_inventario</code> (stock calculado por <code>sum()</code>). <strong>Eso no se implementó así.</strong> La necesidad real resultó más simple que distinguir "propio vs. reventa": lo que varía no es el origen del artículo, sino si es algo que <em>se consume</em> (insumo: bolsas, etiquetas) o algo que <em>se vende</em> (producto terminado) — y ambos pueden comprarse a un proveedor igual. De ahí surgió un catálogo único:</p>
+<pre class="codeblock">create table articulos (
+  id uuid primary key default gen_random_uuid(),
+  tipo text not null check (tipo in ('insumo','producto_terminado')),
+  nombre text not null,
+  unidad_medida text not null,       -- "bolsa", "pieza", "kg", etc. — libre, no catálogo aparte
+  stock_actual numeric not null default 0,
+  precio_venta numeric,              -- solo aplica a producto_terminado
+  activo boolean not null default true
 );
 
--- Stock actual: se calcula, nunca se guarda como contador editable
-create view inventario_producto_terminado as
-select producto_terminado_id, sum(cantidad) as stock_actual
-from movimientos_inventario
-group by producto_terminado_id;
+-- compras: una compra puede generar un lote (café) O sumar stock a un
+-- articulo (insumo o producto de reventa) — nunca ambos a la vez
+create table compras (
+  id uuid primary key default gen_random_uuid(),
+  tipo_compra text not null check (tipo_compra in ('lote','insumo','producto_terminado')),
+  proveedor_id uuid not null references proveedores(id),
+  lote_id uuid references lotes(id),
+  articulo_id uuid references articulos(id),
+  costo_total numeric,
+  creado_por uuid references usuarios(id)
+);
 </pre>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th class="mono">tipo_movimiento</th><th>Cuándo se usa</th></tr></thead>
-          <tbody>
-            <tr><td class="mono">entrada_empacado</td><td>Sale de tu propia producción (M4 → empacado)</td></tr>
-            <tr><td class="mono">entrada_compra</td><td>Compraste café ya listo para vender, sin pasar por tu proceso</td></tr>
-            <tr><td class="mono">salida_venta</td><td>Se vendió al cliente</td></tr>
-            <tr><td class="mono">ajuste</td><td>Corrección manual: conteo físico, merma por daño, alta inicial de producto nuevo</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <p class="note"><code>stock_actual</code> se mantiene directo (se suma/resta dentro de cada función <code>security invoker</code> — <code>registrar_compra_articulo</code>, <code>empacar_lote</code>, <code>eliminar_empacado</code>, ventas, ajuste manual), no por un ledger de movimientos separado. Se aceptó ese trade-off: menos tablas y queries más simples, a cambio de que el historial de "por qué cambió el stock" vive repartido en varias tablas (<code>compras</code>, <code>empacados</code>, <code>venta_items</code>) en vez de en un solo lugar — hoy es suficiente porque cada una de esas tablas por sí sola responde esa pregunta para su propio caso.</p>
+
+      <h3>7.3 — Receta de insumos por producto (bill of materials)</h3>
+      <p class="note">Agregado 12-oct-2026, no estaba en el diseño original. Antes, al empacar se podía elegir <em>un</em> insumo opcional a descontar; en la práctica un producto necesita varios (bolsa + etiqueta + sticker), cada uno en cantidad distinta. Se resolvió con una tabla de receta configurable desde el catálogo de artículos, y una tabla de consumo real para poder revertir un empacado eliminado:</p>
+<pre class="codeblock">create table articulo_insumos (   -- la receta: qué insumos y cuántos necesita un producto
+  id uuid primary key default gen_random_uuid(),
+  articulo_id uuid not null references articulos(id) on delete cascade,  -- producto_terminado
+  insumo_articulo_id uuid not null references articulos(id),            -- insumo
+  cantidad_por_unidad numeric not null check (cantidad_por_unidad > 0),
+  check (articulo_id <> insumo_articulo_id),
+  unique (articulo_id, insumo_articulo_id)
+);
+
+create table empacados (          -- un empacado real (sin la columna insumo_articulo_id original)
+  id uuid primary key default gen_random_uuid(),
+  lote_origen_id uuid not null references lotes(id),
+  articulo_id uuid not null references articulos(id),     -- producto_terminado generado
+  presentacion_id uuid not null references presentaciones(id),
+  unidades numeric not null check (unidades > 0),
+  peso_kg numeric not null check (peso_kg > 0),
+  usuario_id uuid references usuarios(id)
+);
+
+create table empacado_insumos (   -- qué insumos (y cuánto de cada uno) se consumieron en ESTE empacado
+  id uuid primary key default gen_random_uuid(),
+  empacado_id uuid not null references empacados(id) on delete cascade,
+  insumo_articulo_id uuid not null references articulos(id),
+  cantidad numeric not null check (cantidad > 0)
+);
+</pre>
+      <p class="note"><code>empacar_lote(lote, articulo, presentación, unidades)</code> ya no recibe un insumo a mano: lee la receta de <code>articulo_insumos</code>, valida en una primera pasada que haya existencia suficiente de <strong>todos</strong> los insumos antes de descontar nada (todo-o-nada), y solo entonces descuenta cada uno y dejará constancia en <code>empacado_insumos</code>. <code>eliminar_empacado</code> revierte el peso del lote, el stock del producto y <strong>todos</strong> los insumos consumidos (no solo uno), leyendo esa misma tabla.</p>
     </section>
 
     <section id="seguridad">
@@ -656,16 +718,17 @@ group by producto_terminado_id;
 
     <section id="ambientes">
       <div class="section-head"><span class="num">09</span><h2>Ambientes y costos</h2></div>
+      <p class="note"><strong>Diferencia con el plan original:</strong> no se creó un segundo proyecto Supabase para producción — hoy existe un único proyecto ("Xalachi - Backend Dev", ref <code>uwuhcxfrblsqckdavylp</code>) y el sitio de pruebas público comparte esa misma base de datos. Es una decisión consciente mientras el sistema está en validación (ver <code>feedback_decisiones_costo</code>), no un olvido — pero implica que datos de prueba y datos reales conviven en la misma base hasta que se decida separar.</p>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Ambiente</th><th>Vercel</th><th>Supabase</th><th>Respaldo</th><th class="mono">Costo/mes</th></tr></thead>
           <tbody>
-            <tr><td>No productivo</td><td>Hobby (free) — preview deployments por rama</td><td>Proyecto Free</td><td>N/A</td><td class="mono">$0</td></tr>
-            <tr><td><strong>Productivo</strong></td><td>Hobby (free)</td><td>Proyecto Free</td><td>Manual (pendiente automatizar, §12)</td><td class="mono">$0</td></tr>
+            <tr><td><strong>Sitio de pruebas</strong> (<code>xalachi-dev-crm.vercel.app</code>)</td><td>Proyecto <code>xalachi-crm</code>, plan Hobby (free), deploy manual vía <code>vercel deploy --prod</code> (sin conexión a GitHub — no hay auto-deploy por push)</td><td>Mismo proyecto Free de desarrollo</td><td>N/A</td><td class="mono">$0</td></tr>
+            <tr><td>Producción real</td><td colspan="3"><em>No existe todavía — pendiente de crear cuando el negocio empiece a operar con datos reales de clientes (requiere separar la base de datos, ver riesgo en §12)</em></td><td class="mono">—</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="callout decision"><strong>Decisión vigente:</strong> arrancar en free en ambos ambientes para validar el producto sin costo fijo. Backups vía <code>pg_dump</code> automatizado se implementan como tarea de cierre, no como mejora opcional — ver riesgo en §12.</div>
+      <div class="callout decision"><strong>Decisión vigente:</strong> arrancar en free para validar el producto sin costo fijo. Backups vía <code>pg_dump</code> automatizado siguen pendientes de implementar — ver riesgo en §12.</div>
       <h3>9.1 — Ruta de escalamiento cuando el negocio lo justifique</h3>
       <div class="table-wrap">
         <table>
@@ -681,7 +744,8 @@ group by producto_terminado_id;
 
     <section id="observabilidad">
       <div class="section-head"><span class="num">10</span><h2>Observabilidad</h2></div>
-      <p>Arranca en free en ambas herramientas — suficiente para el volumen actual (5 req/s):</p>
+      <div class="callout"><strong>Estado real: no implementado.</strong> Ni Sentry ni Better Stack están integrados en el código a la fecha de este documento (verificado: no hay dependencia ni configuración de ninguno de los dos en el repo). Lo que sigue es el plan original, sin ejecutar todavía — queda como pendiente, no como hecho.</div>
+      <p>Plan original, pendiente de implementar — suficiente para el volumen actual (5 req/s):</p>
       <div class="grid-2">
         <div class="callout"><strong>Sentry (Developer, $0)</strong><br>5K errores/mes, captura de excepciones y trazas básicas del frontend y API routes.</div>
         <div class="callout"><strong>Better Stack (Free, $0)</strong><br>10 monitores de uptime, alertas por Slack/email si el sitio cae.</div>
@@ -692,11 +756,11 @@ group by producto_terminado_id;
       <p class="note">No se centralizan en una sola tabla: cada capa responde una pregunta distinta y necesita su propia herramienta.</p>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Capa</th><th>Responde</th><th>Herramienta</th><th>Retención</th></tr></thead>
+          <thead><tr><th>Capa</th><th>Responde</th><th>Herramienta</th><th>Retención</th><th>Estado</th></tr></thead>
           <tbody>
-            <tr><td>Infraestructura</td><td>¿Por qué falló una query o una request?</td><td>Supabase Logs Explorer (nativo)</td><td class="mono">1 día Free · 7 días Pro</td></tr>
-            <tr><td>Aplicación</td><td>¿Qué excepción truena, con qué stack trace y qué usuario?</td><td>Sentry</td><td>Según plan (§10)</td></tr>
-            <tr><td>Auditoría de negocio</td><td>¿Quién cambió este dato y cuándo?</td><td>Tabla <code>audit_log</code> (§7.1)</td><td class="mono">Configurable, 15 días por defecto</td></tr>
+            <tr><td>Infraestructura</td><td>¿Por qué falló una query o una request?</td><td>Supabase Logs Explorer (nativo)</td><td class="mono">1 día Free · 7 días Pro</td><td><span class="pill green">Disponible (nativo)</span></td></tr>
+            <tr><td>Aplicación</td><td>¿Qué excepción truena, con qué stack trace y qué usuario?</td><td>Sentry</td><td>Según plan (§10)</td><td><span class="pill">Pendiente</span></td></tr>
+            <tr><td>Auditoría de negocio</td><td>¿Quién cambió este dato y cuándo?</td><td>Tabla <code>audit_log</code> (§7.1)</td><td class="mono">Configurable, 15 días por defecto</td><td><span class="pill green">Implementado</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -704,19 +768,24 @@ group by producto_terminado_id;
 
     <section id="plan">
       <div class="section-head"><span class="num">11</span><h2>Plan de implementación por módulos</h2></div>
+      <p class="note">Columna <strong>Estado</strong> añadida en esta revisión — todo lo marcado "Hecho" está construido, probado (suite e2e + unitarias) y en uso en el sitio de pruebas.</p>
       <div class="table-wrap">
         <table>
-          <thead><tr><th class="mono">#</th><th>Módulo</th><th>Contenido</th><th>Depende de</th></tr></thead>
+          <thead><tr><th class="mono">#</th><th>Módulo</th><th>Contenido</th><th>Depende de</th><th>Estado</th></tr></thead>
           <tbody>
-            <tr><td class="mono">M0</td><td>Fundamentos</td><td>Repo, proyectos Supabase (dev/prod), auth, roles, RLS base, <code>audit_log</code></td><td>—</td></tr>
-            <tr><td class="mono">M1</td><td>Catálogos</td><td>Variedades, procesos, perfiles de tueste, presentaciones, proveedores, clientes</td><td>M0</td></tr>
-            <tr><td class="mono">M2</td><td>Inventario y lotes</td><td>Modelo multietapa, stock por etapa</td><td>M1</td></tr>
-            <tr><td class="mono">M3</td><td>Compras</td><td>Compra a proveedor → genera lote</td><td>M1, M2</td></tr>
-            <tr><td class="mono">M4</td><td>Producción</td><td>Órdenes de proceso: trillado, tueste, molido, cálculo de merma</td><td>M2</td></tr>
-            <tr><td class="mono">M5</td><td>Servicios a terceros</td><td>Órdenes de servicio, tarifas, sin impacto en inventario propio</td><td>M1, M4</td></tr>
-            <tr><td class="mono">M6</td><td>Pedidos y ventas</td><td>Pedidos de marca propia, ventas menudeo/mayoreo</td><td>M2, M3</td></tr>
-            <tr><td class="mono">M7</td><td>Reportes</td><td>Costos por lote, márgenes, inventario valorizado, trazabilidad</td><td>M2–M6</td></tr>
-            <tr><td class="mono">M8</td><td>Observabilidad</td><td>Sentry + Better Stack integrados en prod</td><td>Transversal</td></tr>
+            <tr><td class="mono">M0</td><td>Fundamentos</td><td>Repo, proyecto Supabase, auth, roles, RLS base, <code>audit_log</code></td><td>—</td><td><span class="pill green">Hecho</span></td></tr>
+            <tr><td class="mono">M1</td><td>Catálogos</td><td>Variedades, procesos de beneficiado (+ pasos configurables), perfiles de tueste, presentaciones, proveedores, clientes, fincas, artículos</td><td>M0</td><td><span class="pill green">Hecho</span></td></tr>
+            <tr><td class="mono">M2</td><td>Inventario y lotes</td><td>Modelo multietapa (cereza→beneficiado→pergamino→verde→tostado→molido), clasificación por calidad, filtros</td><td>M1</td><td><span class="pill green">Hecho</span></td></tr>
+            <tr><td class="mono">M3</td><td>Compras</td><td>Compra multi-tipo: genera lote, o suma stock a un insumo/producto de reventa</td><td>M1, M2</td><td><span class="pill green">Hecho</span></td></tr>
+            <tr><td class="mono">M4</td><td>Producción</td><td>Tueste, molido (opcional), empacado parcial con receta de insumos automática (§7.3)</td><td>M2</td><td><span class="pill green">Hecho</span></td></tr>
+            <tr><td class="mono">M5</td><td>Servicios a terceros</td><td>Órdenes de servicio encadenables (beneficiado/pelado/clasificación/tueste/molido), tarifas, sin impacto en inventario propio</td><td>M1, M4</td><td><span class="pill green">Hecho</span></td></tr>
+            <tr><td class="mono">—</td><td>Presupuestos de servicio</td><td>Cotización previa a la orden de servicio; al aprobarse genera la orden real</td><td>M5</td><td><span class="pill green">Hecho</span></td></tr>
+            <tr><td class="mono">M6</td><td>Pedidos y ventas</td><td>Pedidos de marca propia (lote o artículo), ventas, estado de pago, reversión al eliminar</td><td>M2, M3</td><td><span class="pill green">Hecho</span></td></tr>
+            <tr><td class="mono">M7</td><td>Reportes</td><td>Reporte de caja por período: ingresos vs. gastos vs. pendientes de cobro (sin margen por producto, ver §7.2)</td><td>M2–M6</td><td><span class="pill green">Hecho</span></td></tr>
+            <tr><td class="mono">—</td><td>Administración de usuarios</td><td>Crear usuario, cambiar rol, suspender/reactivar (ban real en Supabase Auth); cambio de contraseña propio</td><td>M0</td><td><span class="pill green">Hecho</span></td></tr>
+            <tr><td class="mono">—</td><td>Gastos operativos</td><td>Catálogo de categorías + registro de gastos, alimenta Reportes</td><td>M7</td><td><span class="pill green">Hecho</span></td></tr>
+            <tr><td class="mono">—</td><td>Rediseño Material Design</td><td>Todo el sistema migrado de Tailwind a Web Components <code>@material/web</code></td><td>Transversal</td><td><span class="pill green">Hecho</span></td></tr>
+            <tr><td class="mono">M8</td><td>Observabilidad</td><td>Sentry + Better Stack</td><td>Transversal</td><td><span class="pill">Pendiente</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -726,12 +795,14 @@ group by producto_terminado_id;
       <div class="section-head"><span class="num">12</span><h2>Riesgos y decisiones pendientes</h2></div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Riesgo / pendiente</th><th>Impacto</th><th>Mitigación acordada</th></tr></thead>
+          <thead><tr><th>Riesgo / pendiente</th><th>Impacto</th><th>Mitigación acordada</th><th>Estado</th></tr></thead>
           <tbody>
-            <tr><td>Sin respaldo automático en producción</td><td>Alto — pérdida total de datos ante falla</td><td>Tarea de cierre obligatoria: <code>pg_dump</code> + cron a storage externo (§9)</td></tr>
-            <tr><td>Vercel Hobby en producción</td><td>Medio — incumple ToS de uso comercial</td><td>Aceptado durante validación; migrar a Pro al operar con clientes reales</td></tr>
-            <tr><td>RPO relajado de 12h a "manual"</td><td>Medio — ventana de pérdida indefinida hasta automatizar</td><td>Automatizar backup antes de manejar volumen real de ventas</td></tr>
-            <tr><td>BD de instancia única (sin sharding)</td><td>Bajo a esta escala</td><td>No accionable ahora; revisar si el throughput supera por mucho 5 req/s</td></tr>
+            <tr><td>Sin respaldo automático</td><td>Alto — pérdida total de datos ante falla</td><td><code>pg_dump</code> + cron a storage externo (§9)</td><td><span class="pill">Sigue pendiente</span></td></tr>
+            <tr><td>Un único proyecto Supabase sirve desarrollo, pruebas e2e y el sitio público de pruebas</td><td>Alto — datos de prueba y reales conviven; un dato real quedaría expuesto en un deploy de pruebas</td><td>Aceptado mientras no haya clientes reales; separar en proyecto propio antes de operar con datos reales (§9)</td><td><span class="pill">Riesgo nuevo, abierto</span></td></tr>
+            <tr><td>Vercel Hobby, sin dominio propio ni GitHub conectado</td><td>Medio — incumple ToS de uso comercial; cada publicación requiere <code>vercel deploy</code> manual</td><td>Aceptado durante validación; conectar GitHub y migrar a Pro al operar con clientes reales</td><td><span class="pill">Sigue pendiente</span></td></tr>
+            <tr><td>RPO relajado de 12h a "manual"</td><td>Medio — ventana de pérdida indefinida hasta automatizar</td><td>Automatizar backup antes de manejar volumen real de ventas</td><td><span class="pill">Sigue pendiente</span></td></tr>
+            <tr><td>BD de instancia única (sin sharding)</td><td>Bajo a esta escala</td><td>No accionable ahora; revisar si el throughput supera por mucho 5 req/s</td><td><span class="pill">Sigue pendiente</span></td></tr>
+            <tr><td>45 FKs sin índice + 93 políticas RLS reevaluando <code>auth.jwt()/auth.uid()</code> por fila</td><td>Medio — degradación de desempeño conforme crecen las tablas</td><td>Corrido el Performance Advisor de Supabase; agregados 59 índices y reescritas todas las políticas RLS (migraciones <code>0026</code>/<code>0027</code>)</td><td><span class="pill green">Resuelto (05-oct-2026)</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -750,6 +821,6 @@ group by producto_terminado_id;
       </dl>
     </section>
 
-    <footer>Documento vivo — se actualiza conforme avanza cada módulo. Próxima revisión al cierre de M2.</footer>
+    <footer>Documento vivo — se actualiza conforme avanza el sistema. Próxima revisión: al separar un proyecto Supabase de producción real, o al integrar observabilidad (§10).</footer>
   </main>
 </div>
