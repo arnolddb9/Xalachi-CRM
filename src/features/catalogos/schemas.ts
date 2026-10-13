@@ -114,6 +114,15 @@ export const pasoBeneficiadoSchema = z.object({
     .refine((v) => Number.isInteger(v) && v > 0, { message: "El orden debe ser un entero mayor a 0." }),
 });
 
+export const articuloInsumoSchema = z.object({
+  insumo_articulo_id: z.uuid("Selecciona un insumo válido."),
+  cantidad_por_unidad: z
+    .string()
+    .trim()
+    .transform((v) => Number(v))
+    .refine((v) => Number.isFinite(v) && v > 0, { message: "La cantidad debe ser mayor a 0." }),
+});
+
 export const SCHEMAS_CATALOGOS: Record<CatalogoGestionable, z.ZodTypeAny> = {
   variedades: variedadSchema,
   procesos_beneficiado: procesoBeneficiadoSchema,

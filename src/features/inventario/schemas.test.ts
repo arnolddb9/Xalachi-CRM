@@ -191,7 +191,7 @@ describe("aplicarMolidoSchema", () => {
 });
 
 describe("empacarLoteSchema", () => {
-  it("acepta unidades con insumo opcional", () => {
+  it("acepta unidades válidas", () => {
     const parsed = empacarLoteSchema.safeParse({
       lote_origen_id: UUID,
       articulo_id: UUID,
@@ -201,20 +201,7 @@ describe("empacarLoteSchema", () => {
     expect(parsed.success).toBe(true);
     if (parsed.success) {
       expect(parsed.data.unidades).toBe(20);
-      expect(parsed.data.insumo_articulo_id).toBeNull();
     }
-  });
-
-  it("acepta un insumo de empaque cuando se indica", () => {
-    const parsed = empacarLoteSchema.safeParse({
-      lote_origen_id: UUID,
-      articulo_id: UUID,
-      presentacion_id: UUID,
-      unidades: "20",
-      insumo_articulo_id: UUID,
-    });
-    expect(parsed.success).toBe(true);
-    if (parsed.success) expect(parsed.data.insumo_articulo_id).toBe(UUID);
   });
 
   it("rechaza unidades 0 o negativas", () => {

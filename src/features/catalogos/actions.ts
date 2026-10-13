@@ -7,6 +7,7 @@ import {
   CATALOGOS_GESTIONABLES,
   SCHEMAS_CATALOGOS,
   pasoBeneficiadoSchema,
+  articuloInsumoSchema,
   type CatalogoGestionable,
 } from "./schemas";
 
@@ -135,6 +136,54 @@ export async function eliminarPasoBeneficiado(
   if (error) return { error: traducirErrorEliminar(error) };
 
   revalidatePath(`/catalogos/procesos/${procesoBeneficiadoId}`);
+  return { success: true };
+}
+
+export async function crearArticuloInsumo(
+  articuloId: string,
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = articuloInsumoSchema.safeParse(datosDesdeFormulario(formData));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("articulo_insumos")
+    .insert({ ...parsed.data, articulo_id: articuloId });
+  if (error) return { error: error.message };
+
+  revalidatePath(`/catalogos/articulos/${articuloId}`);
+  return { success: true };
+}
+
+export async function actualizarArticuloInsumo(
+  articuloId: string,
+  id: string,
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = articuloInsumoSchema.safeParse(datosDesdeFormulario(formData));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("articulo_insumos").update(parsed.data).eq("id", id);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/catalogos/articulos/${articuloId}`);
+  return { success: true };
+}
+
+export async function eliminarArticuloInsumo(articuloId: string, id: string): Promise<ActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("articulo_insumos").delete().eq("id", id);
+  if (error) return { error: traducirErrorEliminar(error) };
+
+  revalidatePath(`/catalogos/articulos/${articuloId}`);
   return { success: true };
 }
 

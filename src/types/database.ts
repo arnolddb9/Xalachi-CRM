@@ -10,10 +10,74 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
+      articulo_insumos: {
+        Row: {
+          articulo_id: string
+          cantidad_por_unidad: number
+          creado_en: string
+          id: string
+          insumo_articulo_id: string
+        }
+        Insert: {
+          articulo_id: string
+          cantidad_por_unidad: number
+          creado_en?: string
+          id?: string
+          insumo_articulo_id: string
+        }
+        Update: {
+          articulo_id?: string
+          cantidad_por_unidad?: number
+          creado_en?: string
+          id?: string
+          insumo_articulo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "articulo_insumos_articulo_id_fkey"
+            columns: ["articulo_id"]
+            isOneToOne: false
+            referencedRelation: "articulos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "articulo_insumos_insumo_articulo_id_fkey"
+            columns: ["insumo_articulo_id"]
+            isOneToOne: false
+            referencedRelation: "articulos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       articulos: {
         Row: {
           activo: boolean
@@ -232,12 +296,47 @@ export type Database = {
         }
         Relationships: []
       }
+      empacado_insumos: {
+        Row: {
+          cantidad: number
+          empacado_id: string
+          id: string
+          insumo_articulo_id: string
+        }
+        Insert: {
+          cantidad: number
+          empacado_id: string
+          id?: string
+          insumo_articulo_id: string
+        }
+        Update: {
+          cantidad?: number
+          empacado_id?: string
+          id?: string
+          insumo_articulo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empacado_insumos_empacado_id_fkey"
+            columns: ["empacado_id"]
+            isOneToOne: false
+            referencedRelation: "empacados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empacado_insumos_insumo_articulo_id_fkey"
+            columns: ["insumo_articulo_id"]
+            isOneToOne: false
+            referencedRelation: "articulos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empacados: {
         Row: {
           articulo_id: string
           creado_en: string
           id: string
-          insumo_articulo_id: string | null
           lote_origen_id: string
           peso_kg: number
           presentacion_id: string
@@ -248,7 +347,6 @@ export type Database = {
           articulo_id: string
           creado_en?: string
           id?: string
-          insumo_articulo_id?: string | null
           lote_origen_id: string
           peso_kg: number
           presentacion_id: string
@@ -259,7 +357,6 @@ export type Database = {
           articulo_id?: string
           creado_en?: string
           id?: string
-          insumo_articulo_id?: string | null
           lote_origen_id?: string
           peso_kg?: number
           presentacion_id?: string
@@ -270,13 +367,6 @@ export type Database = {
           {
             foreignKeyName: "empacados_articulo_id_fkey"
             columns: ["articulo_id"]
-            isOneToOne: false
-            referencedRelation: "articulos"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empacados_insumo_articulo_id_fkey"
-            columns: ["insumo_articulo_id"]
             isOneToOne: false
             referencedRelation: "articulos"
             referencedColumns: ["id"]
@@ -1370,7 +1460,6 @@ export type Database = {
       empacar_lote: {
         Args: {
           p_articulo_id: string
-          p_insumo_articulo_id: string
           p_lote_origen_id: string
           p_presentacion_id: string
           p_unidades: number
@@ -1574,6 +1663,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

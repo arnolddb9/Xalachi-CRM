@@ -47,6 +47,7 @@ export default async function InventarioPage({
     { data: presentaciones },
     { data: configuracion },
     { data: articulos },
+    { data: recetaItems },
     rol,
   ] = await Promise.all([
     consulta,
@@ -62,6 +63,9 @@ export default async function InventarioPage({
       .select("id, nombre, tipo, unidad_medida, stock_actual, precio_venta")
       .eq("activo", true)
       .order("nombre"),
+    supabase
+      .from("articulo_insumos")
+      .select("articulo_id, cantidad_por_unidad, insumo:articulos!articulo_insumos_insumo_articulo_id_fkey(nombre, unidad_medida)"),
     obtenerRolActual(),
   ]);
 
@@ -93,6 +97,7 @@ export default async function InventarioPage({
           precio_venta: Number(a.precio_venta),
         }))}
         presentaciones={presentaciones ?? []}
+        recetaInsumos={recetaItems ?? []}
         factorCajuela={Number(configuracion?.factor_kg_por_cajuela ?? 13.6)}
         puedeEscribir={rol === "admin" || rol === "operador"}
         esAdmin={rol === "admin"}

@@ -33,6 +33,9 @@ export default async function ArticulosPage() {
         filasIniciales={filas ?? []}
         puedeEscribir={rol === "admin" || rol === "operador"}
         esAdmin={rol === "admin"}
+        verDetallePrefijo="/catalogos/articulos"
+        verDetalleLabel="Ver receta"
+        verDetalleCuando={{ campo: "tipo", valor: "producto_terminado" }}
       />
     </main>
   );
