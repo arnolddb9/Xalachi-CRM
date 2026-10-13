@@ -15,6 +15,7 @@
     "@material/web": "^2.5.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.116.0",
+    "@vercel/analytics": "^2.0.1",
     "framer-motion": "^13.2.0",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.45.0",
