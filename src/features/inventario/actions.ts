@@ -214,14 +214,14 @@ export async function empacarLote(
   }
 
   const supabase = await createClient();
-  // El parámetro es no-nulable en los tipos generados, pero la función de
-  // Postgres acepta NULL (empacar sin descontar un insumo de empaque).
+  // Los insumos a descontar (si los hay) se calculan en Postgres a partir de
+  // la receta configurada para el producto (articulo_insumos) — ya no se
+  // eligen a mano en este formulario.
   const { error } = await supabase.rpc("empacar_lote", {
     p_lote_origen_id: parsed.data.lote_origen_id,
     p_articulo_id: parsed.data.articulo_id,
     p_presentacion_id: parsed.data.presentacion_id,
     p_unidades: parsed.data.unidades,
-    p_insumo_articulo_id: parsed.data.insumo_articulo_id as string,
   });
   if (error) return { error: error.message };
 

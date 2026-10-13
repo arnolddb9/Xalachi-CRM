@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu } from "lucide-react";
+import { Coffee, Menu } from "lucide-react";
 import { useSidebar } from "./sidebar-context";
 
 // Ver nota en sidebar.tsx: este header se renderiza en el servidor en
@@ -10,7 +10,10 @@ export function MobileHeader() {
 
   return (
     <header className="bg-sidebar flex w-full items-center justify-between px-4 py-3 md:hidden">
-      <span className="text-lg font-bold text-white">Xalachi</span>
+      <span className="flex items-center gap-2 text-lg font-bold text-white">
+        <Coffee size={22} />
+        Xalachi
+      </span>
       <button
         onClick={abrir}
         aria-label="Abrir menú"

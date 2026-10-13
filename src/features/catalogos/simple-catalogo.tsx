@@ -43,6 +43,8 @@ export function SimpleCatalogo({
   puedeEscribir,
   esAdmin,
   verDetallePrefijo,
+  verDetalleLabel = "Ver pasos",
+  verDetalleCuando,
 }: {
   tabla: CatalogoGestionable;
   titulo: string;
@@ -53,6 +55,11 @@ export function SimpleCatalogo({
   // Prefijo de ruta (string, no función: no se puede pasar una función de un
   // Server Component a este Client Component a través de la frontera RSC).
   verDetallePrefijo?: string;
+  verDetalleLabel?: string;
+  // Muestra el link de detalle solo en las filas donde `fila[campo] === valor`
+  // (ej. artículos: solo los de tipo "producto_terminado" tienen receta).
+  // Si se omite, se muestra en todas las filas (comportamiento previo).
+  verDetalleCuando?: { campo: string; valor: string };
 }) {
   const [mostrarForm, setMostrarForm] = useState(false);
   const [editandoId, setEditandoId] = useState<string | null>(null);
@@ -125,10 +132,10 @@ export function SimpleCatalogo({
                       ))}
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {verDetallePrefijo && (
+                    {verDetallePrefijo && (!verDetalleCuando || fila[verDetalleCuando.campo] === verDetalleCuando.valor) && (
                       <Link href={`${verDetallePrefijo}/${fila.id}`}>
                         <Md3Button variant="outlined" minWidth={90}>
-                          Ver pasos
+                          {verDetalleLabel}
                         </Md3Button>
                       </Link>
                     )}

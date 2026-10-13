@@ -17,6 +17,7 @@ import {
   BarChart3,
   Users,
   UserCircle,
+  Coffee,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -91,7 +92,10 @@ export function Sidebar({ esAdmin = false }: { esAdmin?: boolean }) {
     <>
       {/* Desktop: rail fijo */}
       <aside className="bg-sidebar hidden w-64 shrink-0 flex-col py-5 md:flex">
-        <div className="mb-6 px-4 text-lg font-bold text-white">Xalachi</div>
+        <div className="mb-6 flex items-center gap-2 px-4 text-lg font-bold text-white">
+          <Coffee size={22} />
+          Xalachi
+        </div>
         <NavLinks pathname={pathname} modulos={modulos} />
       </aside>
 
@@ -114,7 +118,10 @@ export function Sidebar({ esAdmin = false }: { esAdmin?: boolean }) {
               className="bg-sidebar fixed inset-y-0 left-0 z-50 flex w-64 flex-col py-5 md:hidden"
             >
               <div className="mb-6 flex items-center justify-between px-4">
-                <span className="text-lg font-bold text-white">Xalachi</span>
+                <span className="flex items-center gap-2 text-lg font-bold text-white">
+                  <Coffee size={22} />
+                  Xalachi
+                </span>
                 <button
                   onClick={cerrar}
                   aria-label="Cerrar menú"

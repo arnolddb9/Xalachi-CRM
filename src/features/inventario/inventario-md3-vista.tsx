@@ -78,6 +78,11 @@ type Articulo = {
   stock_actual: number;
   precio_venta: number;
 };
+type ItemReceta = {
+  articulo_id: string;
+  cantidad_por_unidad: number;
+  insumo: { nombre: string; unidad_medida: string } | null;
+};
 type ValoresFiltro = {
   finca_id: string;
   variedad_id: string;
@@ -98,6 +103,7 @@ export type InventarioMd3Props = {
   perfilesTueste: Opcion[];
   articulos: Articulo[];
   presentaciones: PresentacionOpcion[];
+  recetaInsumos: ItemReceta[];
   factorCajuela: number;
   puedeEscribir: boolean;
   esAdmin: boolean;
@@ -145,6 +151,7 @@ function TabLotes({
   perfilesTueste,
   articulos,
   presentaciones,
+  recetaInsumos,
   factorCajuela,
   puedeEscribir,
   esAdmin,
@@ -280,6 +287,7 @@ function TabLotes({
                     lote={lote}
                     articulos={articulos}
                     presentaciones={presentaciones}
+                    recetaInsumos={recetaInsumos}
                     onGuardado={() => setEmpacandoId(null)}
                   />
                 ) : (
@@ -742,16 +750,19 @@ function EmpacarForm({
   lote,
   articulos,
   presentaciones,
+  recetaInsumos,
   onGuardado,
 }: {
   lote: Lote;
   articulos: ArticuloOpcion[];
   presentaciones: PresentacionOpcion[];
+  recetaInsumos: ItemReceta[];
   onGuardado: () => void;
 }) {
   const [state, formAction, isPending] = useActionState(empacarLote, {});
   const [presentacionId, setPresentacionId] = useState("");
   const [unidades, setUnidades] = useState("");
+  const [articuloId, setArticuloId] = useState("");
 
   useEffect(() => {
     if (state && "success" in state) onGuardado();
@@ -759,10 +770,11 @@ function EmpacarForm({
   }, [state]);
 
   const productosTerminados = articulos.filter((a) => a.tipo === "producto_terminado");
-  const insumos = articulos.filter((a) => a.tipo === "insumo");
   const presentacionSeleccionada = presentaciones.find((p) => p.id === presentacionId);
   const pesoEstimado =
     presentacionSeleccionada?.peso_gramos && unidades ? (Number(unidades) * presentacionSeleccionada.peso_gramos) / 1000 : null;
+  const recetaProducto = recetaInsumos.filter((r) => r.articulo_id === articuloId);
+  const numUnidades = Number(unidades) || 0;
 
   return (
     <form action={formAction} data-testid="form-empacar" className="space-y-3">
@@ -773,6 +785,8 @@ function EmpacarForm({
           label="Producto terminado"
           name="articulo_id"
           required
+          value={articuloId}
+          onValueChange={setArticuloId}
           placeholder={productosTerminados.length === 0 ? "No hay productos terminados en el catálogo" : "Selecciona un producto"}
           opciones={productosTerminados.map((a) => ({ value: a.id, label: a.nombre }))}
         />
@@ -796,8 +810,16 @@ function EmpacarForm({
           onValueChange={setUnidades}
           supportingText={pesoEstimado !== null ? `≈ ${pesoEstimado.toFixed(2)} kg del lote` : undefined}
         />
-        <Md3Select label="Insumo de empaque (opcional)" name="insumo_articulo_id" placeholder="Sin insumo" opciones={insumos.map((a) => ({ value: a.id, label: a.nombre }))} />
       </div>
+      {articuloId && (
+        <p data-testid="preview-receta-insumos" className="text-sm" style={{ color: "var(--md-sys-color-on-surface-variant)" }}>
+          {recetaProducto.length === 0
+            ? "Este producto no tiene insumos configurados en su receta."
+            : `Se descontará: ${recetaProducto
+                .map((r) => `${(r.cantidad_por_unidad * numUnidades).toFixed(2)} ${r.insumo?.unidad_medida ?? ""} de ${r.insumo?.nombre ?? "—"}`)
+                .join(", ")}`}
+        </p>
+      )}
       {state && "error" in state && state.error && (
         <p className="text-sm" style={{ color: "var(--md-sys-color-error)" }}>
           {state.error}

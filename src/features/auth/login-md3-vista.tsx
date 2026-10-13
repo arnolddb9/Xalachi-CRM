@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { Coffee } from "lucide-react";
 import "@/features/inventario/md3-theme.css";
 import { createClient } from "@/lib/supabase/client";
 import { traducirErrorAuth } from "@/features/auth/auth-errors";
@@ -46,7 +47,11 @@ export function LoginMd3Vista() {
       >
         <Md3Card variant="elevated" style={{ padding: 0 }}>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-6 sm:p-8">
-            <h1 className="text-lg font-medium" style={{ color: "var(--md-sys-color-on-surface)" }}>
+            <h1
+              className="flex items-center gap-2 text-lg font-medium"
+              style={{ color: "var(--md-sys-color-on-surface)" }}
+            >
+              <Coffee size={22} style={{ color: "var(--md-sys-color-primary)" }} />
               Iniciar sesión — Xalachi
             </h1>
 

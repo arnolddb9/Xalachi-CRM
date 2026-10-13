@@ -51,7 +51,21 @@ export function Md3Select({
   return (
     <span
       data-testid={name ? `select-${name}` : undefined}
-      style={{ display: "inline-flex", flexDirection: "column", width: minWidth, maxWidth: "100%", flexShrink: 0, ...style }}
+      style={{
+        display: "inline-flex",
+        flexDirection: "column",
+        minWidth,
+        // Tope de ancho (no ancho fijo): deja que el campo se ajuste a su
+        // contenido real (nombres cortos quedan en una línea), pero evita
+        // que un valor seleccionado anormalmente largo desborde el layout
+        // — @material/web no soporta truncar con "…" el texto ya
+        // seleccionado (no hay CSS que alcance ese nodo a través del
+        // shadow DOM), así que de pasarse del tope simplemente se envuelve
+        // en varias líneas dentro de esta caja, en vez de salirse de ella.
+        maxWidth: `min(100%, ${Math.max(minWidth * 2, 320)}px)`,
+        flexShrink: 0,
+        ...style,
+      }}
     >
       <md-outlined-select
         id={inputId}

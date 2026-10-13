@@ -106,7 +106,6 @@ export const empacarLoteSchema = z.object({
     .trim()
     .transform((v) => Number(v))
     .refine((v) => Number.isFinite(v) && v > 0, { message: "Las unidades deben ser mayores a 0." }),
-  insumo_articulo_id: opcional(uuid),
 });
 
 export const clasificarCalidadSchema = z

@@ -58,6 +58,19 @@ test.describe("Producción: tueste, molido y empacado (rol admin)", () => {
     await page.getByRole("button", { name: "Guardar" }).click();
     await expect(page.getByText(nombreInsumo)).toBeVisible();
 
+    // Receta del producto: 1 unidad del insumo por cada unidad empacada
+    await page
+      .getByTestId("fila-catalogo")
+      .filter({ hasText: nombreProducto })
+      .getByRole("button", { name: "Ver receta" })
+      .click();
+    await page.getByRole("button", { name: "Agregar insumo" }).click();
+    await seleccionarMd3PorTexto(page.getByTestId("select-insumo_articulo_id"), nombreInsumo);
+    await page.getByLabel("Cantidad por unidad").fill("1");
+    await page.getByRole("button", { name: "Guardar" }).click();
+    await expect(page.getByTestId("fila-receta-insumo").filter({ hasText: nombreInsumo })).toBeVisible();
+    await page.goto("/catalogos/articulos");
+
     // Insumo con existencia inicial suficiente para empacar después
     await page.goto("/inventario");
     await page.getByText("Insumos", { exact: true }).click();
@@ -108,7 +121,7 @@ test.describe("Producción: tueste, molido y empacado (rol admin)", () => {
     await seleccionarMd3PorTexto(formEmpacar.getByTestId("select-articulo_id"), nombreProducto);
     await seleccionarMd3PorTexto(formEmpacar.getByTestId("select-presentacion_id"), `${nombrePresentacion} (250 g)`);
     await formEmpacar.getByLabel("Unidades a empacar").fill("10");
-    await seleccionarMd3PorTexto(formEmpacar.getByTestId("select-insumo_articulo_id"), nombreInsumo);
+    await expect(formEmpacar.getByTestId("preview-receta-insumos")).toContainText(nombreInsumo);
     await formEmpacar.getByRole("button", { name: "Empacar" }).click();
 
     fila = page.getByTestId("fila-lote").filter({ hasText: nombreLote });
